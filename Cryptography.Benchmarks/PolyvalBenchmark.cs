@@ -4,6 +4,7 @@ using BenchmarkDotNet.Attributes;
 
 namespace Cryptography.Benchmarks
 {
+	[InProcess]
 	public class PolyvalBenchmark
 	{
 		private byte[] tag;
