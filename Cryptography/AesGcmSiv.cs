@@ -4,8 +4,58 @@ using System.Runtime.Intrinsics.X86;
 
 namespace Cryptography
 {
-	public unsafe sealed class AesGcmSiv
+	public unsafe sealed class AesGcmSiv : IDisposable
 	{
+		public AesGcmSiv(ReadOnlySpan<byte> key)
+		{
+			throw new NotImplementedException();
+		}
+
+		public AesGcmSiv(byte[] key)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Encrypt(
+			byte[] nonce,
+			byte[] plaintext,
+			byte[] ciphertext,
+			byte[] tag,
+			byte[] associatedData = null)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Encrypt(
+			ReadOnlySpan<byte> nonce,
+			ReadOnlySpan<byte> plaintext,
+			Span<byte> ciphertext,
+			Span<byte> tag,
+			ReadOnlySpan<byte> associatedData = default)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Decrypt(
+			byte[] nonce,
+			byte[] ciphertext,
+			byte[] tag,
+			byte[] plaintext,
+			byte[] associatedData = null)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Decrypt(
+			ReadOnlySpan<byte> nonce,
+			ReadOnlySpan<byte> ciphertext,
+			ReadOnlySpan<byte> tag,
+			Span<byte> plaintext,
+			ReadOnlySpan<byte> associatedData = default)
+		{
+			throw new NotImplementedException();
+		}
+
 		public static void PolyvalHorner(byte[] tag, byte[] hashKey, byte[] input)
 		{
 			int length = input.Length / 16;
@@ -42,6 +92,11 @@ namespace Cryptography
 
 				Sse2.Store(tagPtr, Sse.StaticCast<ulong, byte>(t));
 			}
+		}
+
+		public void Dispose()
+		{
+			throw new NotImplementedException();
 		}
 	}
 }
