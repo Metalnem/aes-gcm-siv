@@ -48,11 +48,7 @@ namespace Cryptography.Tests
 			var powersTable = new byte[size * 16];
 			var hashKey = Hex.Decode("d8733394680050b0610782116bed63c4");
 
-			switch (size)
-			{
-				case 8: AesGcmSiv.InitPowersTable8(powersTable, hashKey); break;
-				case 6: AesGcmSiv.InitPowersTable6(powersTable, hashKey); break;
-			}
+			AesGcmSiv.InitPowersTable(powersTable, hashKey);
 
 			var powers = new byte[size][];
 			powers[0] = hashKey;
