@@ -1,19 +1,34 @@
 using System;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+using System.Security.Cryptography;
 
 namespace Cryptography
 {
 	public unsafe sealed class AesGcmSiv : IDisposable
 	{
+		private const int KeySizeInBytes = 32;
+		private const int NonceSizeInBytes = 12;
+		private const int TagSizeInBytes = 16;
+
+		private bool disposed;
+
 		public AesGcmSiv(ReadOnlySpan<byte> key)
 		{
-			throw new NotImplementedException();
+			if (key.Length != KeySizeInBytes)
+			{
+				throw new CryptographicException("Specified key is not a valid size for this algorithm.");
+			}
 		}
 
 		public AesGcmSiv(byte[] key)
 		{
-			throw new NotImplementedException();
+			Exceptions.ThrowIfNull(key, nameof(key));
+
+			if (key.Length != KeySizeInBytes)
+			{
+				throw new CryptographicException("Specified key is not a valid size for this algorithm.");
+			}
 		}
 
 		public void Encrypt(
@@ -23,7 +38,14 @@ namespace Cryptography
 			byte[] tag,
 			byte[] associatedData = null)
 		{
-			throw new NotImplementedException();
+			Exceptions.ThrowIfDisposed(disposed, nameof(AesGcmSiv));
+
+			Exceptions.ThrowIfNull(nonce, nameof(nonce));
+			Exceptions.ThrowIfNull(plaintext, nameof(plaintext));
+			Exceptions.ThrowIfNull(ciphertext, nameof(ciphertext));
+			Exceptions.ThrowIfNull(tag, nameof(tag));
+
+			Encrypt((ReadOnlySpan<byte>)nonce, plaintext, ciphertext, tag, associatedData);
 		}
 
 		public void Encrypt(
@@ -33,7 +55,9 @@ namespace Cryptography
 			Span<byte> tag,
 			ReadOnlySpan<byte> associatedData = default)
 		{
-			throw new NotImplementedException();
+			Exceptions.ThrowIfDisposed(disposed, nameof(AesGcmSiv));
+
+			CheckParameters(nonce, plaintext, ciphertext, tag);
 		}
 
 		public void Decrypt(
@@ -43,7 +67,14 @@ namespace Cryptography
 			byte[] plaintext,
 			byte[] associatedData = null)
 		{
-			throw new NotImplementedException();
+			Exceptions.ThrowIfDisposed(disposed, nameof(AesGcmSiv));
+
+			Exceptions.ThrowIfNull(nonce, nameof(nonce));
+			Exceptions.ThrowIfNull(plaintext, nameof(plaintext));
+			Exceptions.ThrowIfNull(ciphertext, nameof(ciphertext));
+			Exceptions.ThrowIfNull(tag, nameof(tag));
+
+			Decrypt((ReadOnlySpan<byte>)nonce, ciphertext, tag, plaintext, associatedData);
 		}
 
 		public void Decrypt(
@@ -53,7 +84,31 @@ namespace Cryptography
 			Span<byte> plaintext,
 			ReadOnlySpan<byte> associatedData = default)
 		{
-			throw new NotImplementedException();
+			Exceptions.ThrowIfDisposed(disposed, nameof(AesGcmSiv));
+
+			CheckParameters(nonce, plaintext, ciphertext, tag);
+		}
+
+		private static void CheckParameters(
+			ReadOnlySpan<byte> plaintext,
+			ReadOnlySpan<byte> ciphertext,
+			ReadOnlySpan<byte> nonce,
+			ReadOnlySpan<byte> tag)
+		{
+			if (plaintext.Length != ciphertext.Length)
+			{
+				throw new ArgumentException("Plaintext and ciphertext must have the same length.");
+			}
+
+			if (nonce.Length != NonceSizeInBytes)
+			{
+				throw new ArgumentException("The specified nonce is not a valid size for this algorithm.", nameof(nonce));
+			}
+
+			if (tag.Length != TagSizeInBytes)
+			{
+				throw new ArgumentException("The specified tag is not a valid size for this algorithm.", nameof(tag));
+			}
 		}
 
 		public static void PolyvalHorner(byte[] tag, byte[] hashKey, byte[] input)
@@ -96,7 +151,10 @@ namespace Cryptography
 
 		public void Dispose()
 		{
-			throw new NotImplementedException();
+			if (!disposed)
+			{
+				disposed = true;
+			}
 		}
 	}
 }
