@@ -15,6 +15,7 @@ namespace Cryptography.Tests
 			{
 				"Vectors/aes-128-gcm-siv.json",
 				"Vectors/aes-256-gcm-siv.json",
+				"Vectors/counter-wrap.json"
 			};
 
 			foreach (var file in files)
