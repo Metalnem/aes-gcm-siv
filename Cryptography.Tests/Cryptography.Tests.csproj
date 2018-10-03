@@ -11,6 +11,7 @@
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
     <None Update="Vectors/aes-128-gcm-siv.json" CopyToOutputDirectory="PreserveNewest" />
+	<None Update="Vectors/aes-256-gcm-siv.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
