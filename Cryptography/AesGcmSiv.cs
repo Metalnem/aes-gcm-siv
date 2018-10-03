@@ -148,7 +148,6 @@ namespace Cryptography
 
 		public static void PolyvalHorner(byte[] tag, byte[] hashKey, byte[] input)
 		{
-			int length = input.Length / 16;
 			Vector128<ulong> tmp1, tmp2, tmp3, tmp4, poly, t, h;
 
 			fixed (byte* tagPtr = tag)
@@ -159,9 +158,9 @@ namespace Cryptography
 				t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(tagPtr));
 				h = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(hashKeyPtr));
 
-				for (int i = 0; i < length; ++i)
+				for (int i = 0; i < input.Length; i += 16)
 				{
-					t = Sse2.Xor(t, Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&inputPtr[16 * i])));
+					t = Sse2.Xor(t, Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&inputPtr[i])));
 					tmp1 = Pclmulqdq.CarrylessMultiply(t, h, 0x00);
 					tmp4 = Pclmulqdq.CarrylessMultiply(t, h, 0x11);
 					tmp2 = Pclmulqdq.CarrylessMultiply(t, h, 0x10);
