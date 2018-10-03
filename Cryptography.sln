@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cryptography", "Cryptograph
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cryptography.Tests", "Cryptography.Tests\Cryptography.Tests.csproj", "{75B856F7-93B5-4DDB-AD27-8D036F4BF80F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cryptography.Benchmarks", "Cryptography.Benchmarks\Cryptography.Benchmarks.csproj", "{CE440BD7-D818-4283-A251-938BDA748DAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,5 +46,17 @@ Global
 		{75B856F7-93B5-4DDB-AD27-8D036F4BF80F}.Release|x64.Build.0 = Release|Any CPU
 		{75B856F7-93B5-4DDB-AD27-8D036F4BF80F}.Release|x86.ActiveCfg = Release|Any CPU
 		{75B856F7-93B5-4DDB-AD27-8D036F4BF80F}.Release|x86.Build.0 = Release|Any CPU
+		{CE440BD7-D818-4283-A251-938BDA748DAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE440BD7-D818-4283-A251-938BDA748DAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE440BD7-D818-4283-A251-938BDA748DAA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CE440BD7-D818-4283-A251-938BDA748DAA}.Debug|x64.Build.0 = Debug|Any CPU
+		{CE440BD7-D818-4283-A251-938BDA748DAA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CE440BD7-D818-4283-A251-938BDA748DAA}.Debug|x86.Build.0 = Debug|Any CPU
+		{CE440BD7-D818-4283-A251-938BDA748DAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE440BD7-D818-4283-A251-938BDA748DAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE440BD7-D818-4283-A251-938BDA748DAA}.Release|x64.ActiveCfg = Release|Any CPU
+		{CE440BD7-D818-4283-A251-938BDA748DAA}.Release|x64.Build.0 = Release|Any CPU
+		{CE440BD7-D818-4283-A251-938BDA748DAA}.Release|x86.ActiveCfg = Release|Any CPU
+		{CE440BD7-D818-4283-A251-938BDA748DAA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
