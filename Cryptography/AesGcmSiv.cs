@@ -162,6 +162,80 @@ namespace Cryptography
 			}
 		}
 
+		public static void DeriveKeys(byte[] nonce, byte[] hashKey, byte[] encryptionKey, byte[] roundKeys)
+		{
+			Vector128<byte> xmm1, xmm3, b1, b2, b3, b4, b5, b6;
+			Vector128<int> one = Sse2.SetVector128(0, 0, 0, 1);
+
+			fixed (byte* hashKeyPtr = hashKey)
+			fixed (byte* encryptionKeyPtr = encryptionKey)
+			fixed (byte* roundKeysPtr = roundKeys)
+			{
+				var n = MemoryMarshal.Cast<byte, int>(nonce);
+
+				b1 = Sse.StaticCast<int, byte>(Sse2.SetVector128(n[2], n[1], n[0], 0));
+				b2 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b1), one));
+				b3 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b2), one));
+				b4 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b3), one));
+				b5 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b4), one));
+				b6 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b5), one));
+
+				xmm1 = Sse2.LoadVector128(&roundKeysPtr[0]);
+				xmm3 = Sse2.LoadVector128(&roundKeysPtr[16]);
+
+				b1 = Sse2.Xor(b1, xmm1);
+				b2 = Sse2.Xor(b2, xmm1);
+				b3 = Sse2.Xor(b3, xmm1);
+				b4 = Sse2.Xor(b4, xmm1);
+				b5 = Sse2.Xor(b5, xmm1);
+				b6 = Sse2.Xor(b6, xmm1);
+
+				b1 = Aes.Encrypt(b1, xmm3);
+				b2 = Aes.Encrypt(b2, xmm3);
+				b3 = Aes.Encrypt(b3, xmm3);
+				b4 = Aes.Encrypt(b4, xmm3);
+				b5 = Aes.Encrypt(b5, xmm3);
+				b6 = Aes.Encrypt(b6, xmm3);
+
+				for (int i = 1; i <= 6; ++i)
+				{
+					xmm1 = Sse2.LoadVector128(&roundKeysPtr[2 * 16 * i]);
+					xmm3 = Sse2.LoadVector128(&roundKeysPtr[2 * 16 * i + 16]);
+
+					b1 = Aes.Encrypt(b1, xmm1);
+					b2 = Aes.Encrypt(b2, xmm1);
+					b3 = Aes.Encrypt(b3, xmm1);
+					b4 = Aes.Encrypt(b4, xmm1);
+					b5 = Aes.Encrypt(b5, xmm1);
+					b6 = Aes.Encrypt(b6, xmm1);
+
+					b1 = Aes.Encrypt(b1, xmm3);
+					b2 = Aes.Encrypt(b2, xmm3);
+					b3 = Aes.Encrypt(b3, xmm3);
+					b4 = Aes.Encrypt(b4, xmm3);
+					b5 = Aes.Encrypt(b5, xmm3);
+					b6 = Aes.Encrypt(b6, xmm3);
+				}
+
+				xmm1 = Sse2.LoadVector128(&roundKeysPtr[16 * 14]);
+
+				b1 = Aes.EncryptLast(b1, xmm1);
+				b2 = Aes.EncryptLast(b2, xmm1);
+				b3 = Aes.EncryptLast(b3, xmm1);
+				b4 = Aes.EncryptLast(b4, xmm1);
+				b5 = Aes.EncryptLast(b5, xmm1);
+				b6 = Aes.EncryptLast(b6, xmm1);
+
+				Sse2.StoreLow((long*)hashKeyPtr + 0 * 8, Sse.StaticCast<byte, long>(b1));
+				Sse2.StoreLow((long*)hashKeyPtr + 1 * 8, Sse.StaticCast<byte, long>(b2));
+
+				Sse2.StoreLow((long*)encryptionKeyPtr + 0 * 8, Sse.StaticCast<byte, long>(b3));
+				Sse2.StoreLow((long*)encryptionKeyPtr + 1 * 8, Sse.StaticCast<byte, long>(b4));
+				Sse2.StoreLow((long*)encryptionKeyPtr + 2 * 8, Sse.StaticCast<byte, long>(b5));
+				Sse2.StoreLow((long*)encryptionKeyPtr + 3 * 8, Sse.StaticCast<byte, long>(b6));
+			}
+		}
+
 		public static void InitPowersTable(byte[] powersTable, byte[] hashKey)
 		{
 			Vector128<ulong> tmp0, tmp1, tmp2, tmp3, tmp4, poly, t;
