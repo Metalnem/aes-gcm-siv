@@ -226,13 +226,13 @@ namespace Cryptography
 				b5 = Aes.EncryptLast(b5, xmm1);
 				b6 = Aes.EncryptLast(b6, xmm1);
 
-				Sse2.StoreLow((long*)hashKeyPtr + 0 * 8, Sse.StaticCast<byte, long>(b1));
-				Sse2.StoreLow((long*)hashKeyPtr + 1 * 8, Sse.StaticCast<byte, long>(b2));
+				Sse2.StoreLow((long*)hashKeyPtr + 0, Sse.StaticCast<byte, long>(b1));
+				Sse2.StoreLow((long*)hashKeyPtr + 1, Sse.StaticCast<byte, long>(b2));
 
-				Sse2.StoreLow((long*)encryptionKeyPtr + 0 * 8, Sse.StaticCast<byte, long>(b3));
-				Sse2.StoreLow((long*)encryptionKeyPtr + 1 * 8, Sse.StaticCast<byte, long>(b4));
-				Sse2.StoreLow((long*)encryptionKeyPtr + 2 * 8, Sse.StaticCast<byte, long>(b5));
-				Sse2.StoreLow((long*)encryptionKeyPtr + 3 * 8, Sse.StaticCast<byte, long>(b6));
+				Sse2.StoreLow((long*)encryptionKeyPtr + 0, Sse.StaticCast<byte, long>(b3));
+				Sse2.StoreLow((long*)encryptionKeyPtr + 1, Sse.StaticCast<byte, long>(b4));
+				Sse2.StoreLow((long*)encryptionKeyPtr + 2, Sse.StaticCast<byte, long>(b5));
+				Sse2.StoreLow((long*)encryptionKeyPtr + 3, Sse.StaticCast<byte, long>(b6));
 			}
 		}
 

@@ -9,6 +9,13 @@ namespace Cryptography.Tests
 {
 	public class AesGcmSivTest
 	{
+		private static readonly List<string> files = new List<string>
+		{
+			"Vectors/aes-128-gcm-siv.json",
+			"Vectors/aes-256-gcm-siv.json",
+			"Vectors/counter-wrap.json"
+		};
+
 		[Fact]
 		public void TestKeySchedule()
 		{
@@ -37,30 +44,30 @@ namespace Cryptography.Tests
 		}
 
 		[Fact]
+		public void TestDeriveKeys()
+		{
+			foreach (var vector in LoadVectors(files[1]))
+			{
+				var roundKeys = new byte[15 * 16];
+				AesGcmSiv.KeySchedule(vector.Key, roundKeys);
+
+				var hashKey = new byte[16];
+				var encryptionKey = new byte[32];
+				AesGcmSiv.DeriveKeys(vector.Nonce, hashKey, encryptionKey, roundKeys);
+
+				Assert.Equal(Hex.Encode(vector.RecordAuthenticationKey), Hex.Encode(hashKey));
+				Assert.Equal(Hex.Encode(vector.RecordEncryptionKey), Hex.Encode(encryptionKey));
+			}
+		}
+
+		[Fact]
 		public void TestPolyvalHorner()
 		{
-			var files = new List<string>
+			foreach (var vector in files.SelectMany(LoadVectors))
 			{
-				"Vectors/aes-128-gcm-siv.json",
-				"Vectors/aes-256-gcm-siv.json",
-				"Vectors/counter-wrap.json"
-			};
-
-			foreach (var file in files)
-			{
-				var s = File.ReadAllText(file);
-				var json = JObject.Parse(s);
-
-				foreach (var vector in json["vectors"])
-				{
-					var tag = new byte[16];
-					var hashKey = GetBytes(vector, "record_authentication_key");
-					var input = GetBytes(vector, "polyval_input");
-					var polyval = GetString(vector, "polyval_result");
-
-					AesGcmSiv.PolyvalHorner(tag, hashKey, input);
-					Assert.Equal(polyval, Hex.Encode(tag));
-				}
+				var tag = new byte[16];
+				AesGcmSiv.PolyvalHorner(tag, vector.RecordAuthenticationKey, vector.PolyvalInput);
+				Assert.Equal(Hex.Encode(vector.PolyvalResult), Hex.Encode(tag));
 			}
 		}
 
@@ -90,6 +97,32 @@ namespace Cryptography.Tests
 			var actual = Hex.Encode(powers.SelectMany(b => b).ToArray());
 
 			Assert.Equal(expected, actual);
+		}
+
+		private static IEnumerable<Vector> LoadVectors(string file)
+		{
+			var s = File.ReadAllText(file);
+			var json = JObject.Parse(s);
+
+			foreach (var vector in json["vectors"])
+			{
+				yield return new Vector
+				{
+					Plaintext = GetBytes(vector, "plaintext"),
+					Aad = GetBytes(vector, "aad"),
+					Key = GetBytes(vector, "key"),
+					Nonce = GetBytes(vector, "nonce"),
+					RecordAuthenticationKey = GetBytes(vector, "record_authentication_key"),
+					RecordEncryptionKey = GetBytes(vector, "record_encryption_key"),
+					PolyvalInput = GetBytes(vector, "polyval_input"),
+					PolyvalResult = GetBytes(vector, "polyval_result"),
+					PolyvalResultXorNonce = GetBytes(vector, "polyval_result_xor_nonce"),
+					PolyvalResultXorNonceMasked = GetBytes(vector, "polyval_result_xor_nonce_masked"),
+					Tag = GetBytes(vector, "tag"),
+					TnitialCounter = GetBytes(vector, "initial_counter"),
+					Result = GetBytes(vector, "result")
+				};
+			}
 		}
 
 		private static string GetString(JToken token, string property)
