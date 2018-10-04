@@ -17,6 +17,8 @@ namespace Cryptography
 
 		public AesGcmSiv(ReadOnlySpan<byte> key)
 		{
+			// TODO: throw if platform not supported
+
 			if (key.Length != KeySizeInBytes)
 			{
 				throw new CryptographicException("Specified key is not a valid size for this algorithm.");
@@ -25,6 +27,8 @@ namespace Cryptography
 
 		public AesGcmSiv(byte[] key)
 		{
+			// TODO: throw if platform not supported
+
 			Exceptions.ThrowIfNull(key, nameof(key));
 
 			if (key.Length != KeySizeInBytes)
@@ -273,6 +277,14 @@ namespace Cryptography
 
 		public static void PolyvalHorner(byte[] tag, byte[] hashKey, byte[] input)
 		{
+			int length = input.Length;
+			int blocks = Math.DivRem(length, 16, out int remainder);
+
+			if (length == 0 && remainder == 0)
+			{
+				return;
+			}
+
 			Vector128<ulong> tmp1, tmp2, tmp3, tmp4, poly, t, h;
 
 			fixed (byte* tagPtr = tag)
@@ -283,9 +295,33 @@ namespace Cryptography
 				t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(tagPtr));
 				h = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(hashKeyPtr));
 
-				for (int i = 0; i < input.Length; i += 16)
+				for (int i = 0; i < blocks; ++i)
 				{
-					t = Sse2.Xor(t, Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&inputPtr[i])));
+					t = Sse2.Xor(t, Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&inputPtr[16 * i])));
+					tmp1 = Pclmulqdq.CarrylessMultiply(t, h, 0x00);
+					tmp4 = Pclmulqdq.CarrylessMultiply(t, h, 0x11);
+					tmp2 = Pclmulqdq.CarrylessMultiply(t, h, 0x10);
+					tmp3 = Pclmulqdq.CarrylessMultiply(t, h, 0x01);
+					tmp2 = Sse2.Xor(tmp2, tmp3);
+					tmp3 = Sse2.ShiftLeftLogical128BitLane(tmp2, 8);
+					tmp2 = Sse2.ShiftRightLogical128BitLane(tmp2, 8);
+					tmp1 = Sse2.Xor(tmp3, tmp1);
+					tmp4 = Sse2.Xor(tmp4, tmp2);
+					tmp2 = Pclmulqdq.CarrylessMultiply(tmp1, poly, 0x10);
+					tmp3 = Sse.StaticCast<uint, ulong>(Sse2.Shuffle(Sse.StaticCast<ulong, uint>(tmp1), 78));
+					tmp1 = Sse2.Xor(tmp3, tmp2);
+					tmp2 = Pclmulqdq.CarrylessMultiply(tmp1, poly, 0x10);
+					tmp3 = Sse.StaticCast<uint, ulong>(Sse2.Shuffle(Sse.StaticCast<ulong, uint>(tmp1), 78));
+					tmp1 = Sse2.Xor(tmp3, tmp2);
+					t = Sse2.Xor(tmp4, tmp1);
+				}
+
+				if (remainder != 0)
+				{
+					byte* b = stackalloc byte[16];
+					input.AsSpan(length - remainder).CopyTo(new Span<byte>(b, 16));
+
+					t = Sse2.Xor(t, Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(b)));
 					tmp1 = Pclmulqdq.CarrylessMultiply(t, h, 0x00);
 					tmp4 = Pclmulqdq.CarrylessMultiply(t, h, 0x11);
 					tmp2 = Pclmulqdq.CarrylessMultiply(t, h, 0x10);
@@ -306,6 +342,44 @@ namespace Cryptography
 
 				Sse2.Store(tagPtr, Sse.StaticCast<ulong, byte>(t));
 			}
+		}
+
+		public static void CalculateTag(
+			byte[] nonce,
+			byte[] plaintext,
+			byte[] associatedData,
+			byte[] hashKey,
+			byte[] tag)
+		{
+			// TODO: stackalloc
+			var lengthBlock = new byte[16];
+
+			// TODO: use Span<long>
+			fixed (byte* lengthBlockPtr = lengthBlock)
+			{
+				((long*)lengthBlockPtr)[0] = associatedData.LongLength * 8;
+				((long*)lengthBlockPtr)[1] = plaintext.LongLength * 8;
+			}
+
+			PolyvalHorner(tag, hashKey, associatedData);
+			PolyvalHorner(tag, hashKey, plaintext);
+			PolyvalHorner(tag, hashKey, lengthBlock);
+
+			fixed (byte* noncePtr = nonce)
+			fixed (byte* tagPtr = tag)
+			{
+				var n = MemoryMarshal.Cast<byte, int>(nonce);
+
+				var t = Sse2.LoadVector128(tagPtr);
+				t = Sse2.Xor(t, Sse.StaticCast<int, byte>(Sse2.SetVector128(0, n[2], n[1], n[0])));
+
+				var andMask = Sse2.SetVector128(0x7fffffffffffffff, 0xffffffffffffffff);
+				t = Sse2.And(t, Sse.StaticCast<ulong, byte>(andMask));
+
+				Sse2.Store(tagPtr, t);
+			}
+
+			// TODO: encrypt the tag
 		}
 
 		public void Dispose()

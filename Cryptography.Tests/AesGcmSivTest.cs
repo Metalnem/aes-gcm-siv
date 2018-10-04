@@ -99,6 +99,25 @@ namespace Cryptography.Tests
 			Assert.Equal(expected, actual);
 		}
 
+		[Fact]
+		public void TestCalculateTag()
+		{
+			foreach (var vector in LoadVectors(files[1]))
+			{
+				var roundKeys = new byte[15 * 16];
+				AesGcmSiv.KeySchedule(vector.Key, roundKeys);
+
+				var hashKey = new byte[16];
+				var encryptionKey = new byte[32];
+				AesGcmSiv.DeriveKeys(vector.Nonce, hashKey, encryptionKey, roundKeys);
+
+				var tag = new byte[16];
+				AesGcmSiv.CalculateTag(vector.Nonce, vector.Plaintext, vector.Aad, hashKey, tag);
+
+				Assert.Equal(Hex.Encode(vector.PolyvalResultXorNonceMasked), Hex.Encode(tag));
+			}
+		}
+
 		private static IEnumerable<Vector> LoadVectors(string file)
 		{
 			var s = File.ReadAllText(file);
