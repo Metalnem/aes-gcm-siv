@@ -1,7 +1,9 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 using System.Security.Cryptography;
+using Aes = System.Runtime.Intrinsics.X86.Aes;
 
 namespace Cryptography
 {
@@ -108,6 +110,55 @@ namespace Cryptography
 			if (tag.Length != TagSizeInBytes)
 			{
 				throw new ArgumentException("The specified tag is not a valid size for this algorithm.", nameof(tag));
+			}
+		}
+
+		public static void KeySchedule(byte[] key, byte[] roundKeys)
+		{
+			Vector128<byte> xmm1, xmm2, xmm3, xmm14, xmm4, con1, con3, mask;
+
+			fixed (byte* keyPtr = key)
+			fixed (byte* roundKeysPtr = roundKeys)
+			{
+				mask = Sse.StaticCast<int, byte>(Sse2.SetVector128(0x0c0f0e0d, 0x0c0f0e0d, 0x0c0f0e0d, 0x0c0f0e0d));
+				con1 = Sse.StaticCast<int, byte>(Sse2.SetVector128(1, 1, 1, 1));
+				con3 = Sse.StaticCast<sbyte, byte>(Sse2.SetVector128(7, 6, 5, 4, 7, 6, 5, 4, -1, -1, -1, -1, -1, -1, -1, -1));
+				xmm4 = Sse2.SetZeroVector128<byte>();
+				xmm14 = Sse2.SetZeroVector128<byte>();
+				xmm1 = Sse2.LoadVector128(&keyPtr[0]);
+				xmm3 = Sse2.LoadVector128(&keyPtr[16]);
+				Sse2.Store(&roundKeysPtr[0], xmm1);
+				Sse2.Store(&roundKeysPtr[16], xmm3);
+
+				for (int i = 32; i < 14 * 16; i += 32)
+				{
+					xmm2 = Ssse3.Shuffle(xmm3, mask);
+					xmm2 = Aes.EncryptLast(xmm2, con1);
+					con1 = Sse.StaticCast<ulong, byte>(Sse2.ShiftLeftLogical(Sse.StaticCast<byte, ulong>(con1), 1));
+					xmm4 = Sse.StaticCast<ulong, byte>(Sse2.ShiftLeftLogical(Sse.StaticCast<byte, ulong>(xmm1), 32));
+					xmm1 = Sse2.Xor(xmm1, xmm4);
+					xmm4 = Ssse3.Shuffle(xmm1, con3);
+					xmm1 = Sse2.Xor(xmm1, xmm4);
+					xmm1 = Sse2.Xor(xmm1, xmm2);
+					Sse2.Store(&roundKeysPtr[i], xmm1);
+					xmm2 = Sse.StaticCast<uint, byte>(Sse2.Shuffle(Sse.StaticCast<byte, uint>(xmm1), 0xff));
+					xmm2 = Aes.EncryptLast(xmm2, xmm14);
+					xmm4 = Sse.StaticCast<ulong, byte>(Sse2.ShiftLeftLogical(Sse.StaticCast<byte, ulong>(xmm3), 32));
+					xmm3 = Sse2.Xor(xmm4, xmm3);
+					xmm4 = Ssse3.Shuffle(xmm3, con3);
+					xmm3 = Sse2.Xor(xmm4, xmm3);
+					xmm3 = Sse2.Xor(xmm2, xmm3);
+					Sse2.Store(&roundKeysPtr[i + 16], xmm3);
+				}
+
+				xmm2 = Ssse3.Shuffle(xmm3, mask);
+				xmm2 = Aes.EncryptLast(xmm2, con1);
+				xmm4 = Sse.StaticCast<ulong, byte>(Sse2.ShiftLeftLogical(Sse.StaticCast<byte, ulong>(xmm1), 32));
+				xmm1 = Sse2.Xor(xmm1, xmm4);
+				xmm4 = Ssse3.Shuffle(xmm1, con3);
+				xmm1 = Sse2.Xor(xmm1, xmm4);
+				xmm1 = Sse2.Xor(xmm1, xmm2);
+				Sse2.Store(&roundKeysPtr[14 * 16], xmm1);
 			}
 		}
 
