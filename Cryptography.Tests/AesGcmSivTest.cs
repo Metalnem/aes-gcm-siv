@@ -112,9 +112,9 @@ namespace Cryptography.Tests
 				AesGcmSiv.DeriveKeys(vector.Nonce, hashKey, encryptionKey, roundKeys);
 
 				var tag = new byte[16];
-				AesGcmSiv.CalculateTag(vector.Nonce, vector.Plaintext, vector.Aad, hashKey, tag);
+				AesGcmSiv.CalculateTag(vector.Nonce, vector.Plaintext, vector.Aad, hashKey, encryptionKey, tag);
 
-				Assert.Equal(Hex.Encode(vector.PolyvalResultXorNonceMasked), Hex.Encode(tag));
+				Assert.Equal(Hex.Encode(vector.Tag), Hex.Encode(tag));
 			}
 		}
 
