@@ -118,6 +118,29 @@ namespace Cryptography.Tests
 			}
 		}
 
+		[Fact]
+		public void TestEncrypt4()
+		{
+			foreach (var vector in LoadVectors(files[1]))
+			{
+				var roundKeys = new byte[15 * 16];
+				AesGcmSiv.KeySchedule(vector.Key, roundKeys);
+
+				var hashKey = new byte[16];
+				var encryptionKey = new byte[32];
+				AesGcmSiv.DeriveKeys(vector.Nonce, hashKey, encryptionKey, roundKeys);
+
+				var tag = new byte[16];
+				var encryptionRoundKeys = AesGcmSiv.CalculateTag(vector.Nonce, vector.Plaintext, vector.Aad, hashKey, encryptionKey, tag);
+
+				var ciphertext = new byte[vector.Plaintext.Length + tag.Length];
+				Array.Copy(tag, 0, ciphertext, ciphertext.Length - tag.Length, tag.Length);
+				AesGcmSiv.Encrypt4(vector.Plaintext, ciphertext, tag, encryptionRoundKeys);
+
+				Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(ciphertext));
+			}
+		}
+
 		private static IEnumerable<Vector> LoadVectors(string file)
 		{
 			var s = File.ReadAllText(file);
@@ -138,7 +161,7 @@ namespace Cryptography.Tests
 					PolyvalResultXorNonce = GetBytes(vector, "polyval_result_xor_nonce"),
 					PolyvalResultXorNonceMasked = GetBytes(vector, "polyval_result_xor_nonce_masked"),
 					Tag = GetBytes(vector, "tag"),
-					TnitialCounter = GetBytes(vector, "initial_counter"),
+					InitialCounter = GetBytes(vector, "initial_counter"),
 					Result = GetBytes(vector, "result")
 				};
 			}

@@ -409,7 +409,7 @@ namespace Cryptography
 			}
 		}
 
-		public static void CalculateTag(
+		public static byte[] CalculateTag(
 			byte[] nonce,
 			byte[] plaintext,
 			byte[] associatedData,
@@ -447,8 +447,116 @@ namespace Cryptography
 
 			// TODO: encapsulate in a struct
 			byte[] roundKeys = new byte[15 * 16];
-
 			EncryptTag(tag, tag, encryptionKey, roundKeys);
+
+			return roundKeys;
+		}
+
+		public static void Encrypt4(byte[] plaintext, byte[] ciphertext, byte[] tag, byte[] roundKeys)
+		{
+			int length = plaintext.Length;
+
+			Vector128<byte> orMask, ctr, tmp, tmp1, tmp2, tmp3;
+			Vector128<int> one, two;
+			int i, j, remainderLoc, remainder = 0;
+			remainder = length % 16;
+			length /= 16;
+
+			one = Sse2.SetVector128(0, 0, 0, 1);
+			two = Sse2.SetVector128(0, 0, 0, 2);
+
+			fixed (byte* tagPtr = tag)
+			{
+				ctr = Sse2.LoadVector128(tagPtr);
+			}
+
+			orMask = Sse.StaticCast<uint, byte>(Sse2.SetVector128(0x80000000, 0, 0, 0));
+			ctr = Sse2.Or(ctr, orMask);
+
+			remainderLoc = length - length % 4;
+
+			fixed (byte* plaintextPtr = plaintext)
+			fixed (byte* ciphertextPtr = ciphertext)
+			fixed (byte* roundKeysPtr = roundKeys)
+			{
+				for (i = 0; i < remainderLoc; i += 4)
+				{
+					tmp = ctr;
+					tmp1 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
+					tmp2 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), two));
+					tmp3 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(tmp2), one));
+					ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(tmp2), two));
+
+					// TODO: preload round keys (not just here)
+					tmp = Sse2.Xor(tmp, Sse2.LoadVector128(roundKeysPtr));
+					tmp1 = Sse2.Xor(tmp1, Sse2.LoadVector128(roundKeysPtr));
+					tmp2 = Sse2.Xor(tmp2, Sse2.LoadVector128(roundKeysPtr));
+					tmp3 = Sse2.Xor(tmp3, Sse2.LoadVector128(roundKeysPtr));
+
+					// TODO: refactor all multiplications by 16
+					for (j = 1; j < 14; ++j)
+					{
+						tmp = Aes.Encrypt(tmp, Sse2.LoadVector128(&roundKeysPtr[j * 16]));
+						tmp1 = Aes.Encrypt(tmp1, Sse2.LoadVector128(&roundKeysPtr[j * 16]));
+						tmp2 = Aes.Encrypt(tmp2, Sse2.LoadVector128(&roundKeysPtr[j * 16]));
+						tmp3 = Aes.Encrypt(tmp3, Sse2.LoadVector128(&roundKeysPtr[j * 16]));
+					};
+
+					tmp = Aes.EncryptLast(tmp, Sse2.LoadVector128(&roundKeysPtr[j * 16]));
+					tmp1 = Aes.EncryptLast(tmp1, Sse2.LoadVector128(&roundKeysPtr[j * 16]));
+					tmp2 = Aes.EncryptLast(tmp2, Sse2.LoadVector128(&roundKeysPtr[j * 16]));
+					tmp3 = Aes.EncryptLast(tmp3, Sse2.LoadVector128(&roundKeysPtr[j * 16]));
+
+					tmp = Sse2.Xor(tmp, Sse2.LoadVector128(&plaintextPtr[(i + 0) * 16]));
+					tmp1 = Sse2.Xor(tmp1, Sse2.LoadVector128(&plaintextPtr[(i + 1) * 16]));
+					tmp2 = Sse2.Xor(tmp2, Sse2.LoadVector128(&plaintextPtr[(i + 2) * 16]));
+					tmp3 = Sse2.Xor(tmp3, Sse2.LoadVector128(&plaintextPtr[(i + 3) * 16]));
+
+					Sse2.Store(&ciphertextPtr[i + 0 * 16], tmp);
+					Sse2.Store(&ciphertextPtr[i + 1 * 16], tmp1);
+					Sse2.Store(&ciphertextPtr[i + 2 * 16], tmp2);
+					Sse2.Store(&ciphertextPtr[i + 3 * 16], tmp3);
+				}
+
+				for (i = 0; i < length % 4; ++i)
+				{
+					tmp = ctr;
+					ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
+					tmp = Sse2.Xor(tmp, Sse2.LoadVector128(roundKeysPtr));
+
+					for (j = 1; j < 14; ++j)
+					{
+						tmp = Aes.Encrypt(tmp, Sse2.LoadVector128(&roundKeysPtr[j * 16]));
+					}
+
+					tmp = Aes.EncryptLast(tmp, Sse2.LoadVector128(&roundKeysPtr[j * 16]));
+					tmp = Sse2.Xor(tmp, Sse2.LoadVector128(&plaintextPtr[(remainderLoc + i) * 16]));
+					Sse2.Store(&ciphertextPtr[(remainderLoc + i) * 16], tmp);
+				}
+
+				if (remainder != 0)
+				{
+					// TODO: do not call plaintext.Length, use calculated position
+					byte* b = stackalloc byte[16];
+					plaintext.AsSpan(plaintext.Length - remainder).CopyTo(new Span<byte>(b, 16));
+
+					tmp = ctr;
+					ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
+					tmp = Sse2.Xor(tmp, Sse2.LoadVector128(roundKeysPtr));
+
+					for (j = 1; j < 14; ++j)
+					{
+						tmp = Aes.Encrypt(tmp, Sse2.LoadVector128(&roundKeysPtr[j * 16]));
+					}
+
+					tmp = Aes.EncryptLast(tmp, Sse2.LoadVector128(&roundKeysPtr[j * 16]));
+					Sse2.Store(b, Sse2.Xor(tmp, Sse2.LoadVector128(b)));
+
+					// TODO: is this necessary?
+					new Span<byte>(b + remainder, 16 - remainder).Clear();
+					new Span<byte>(b, remainder).CopyTo(ciphertext.AsSpan(length * 16, remainder));
+				}
+			}
 		}
 
 		public void Dispose()

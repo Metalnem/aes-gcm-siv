@@ -13,7 +13,7 @@ namespace Cryptography.Tests
 		public byte[] PolyvalResultXorNonce;
 		public byte[] PolyvalResultXorNonceMasked;
 		public byte[] Tag;
-		public byte[] TnitialCounter;
+		public byte[] InitialCounter;
 		public byte[] Result;
 	}
 }
