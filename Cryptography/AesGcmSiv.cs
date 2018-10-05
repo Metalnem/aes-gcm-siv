@@ -366,7 +366,7 @@ namespace Cryptography
 				b1 = Aes.Encrypt(b1, xmm3);
 				Sse2.Store(&roundKeysPtr[16], xmm3);
 
-				for (int i = 0; i < 6; ++i)
+				for (int i = 32; i < 14 * 16; i += 32)
 				{
 					xmm2 = Ssse3.Shuffle(xmm3, mask);
 					xmm2 = Aes.EncryptLast(xmm2, con1);
