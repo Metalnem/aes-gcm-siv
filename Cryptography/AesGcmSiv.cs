@@ -588,13 +588,287 @@ namespace Cryptography
 					tmp2 = Sse2.Xor(tmp2, data2);
 					tmp3 = Sse2.Xor(tmp3, data3);
 
-					Sse2.Store(&ciphertextPtr[i + 0 * 16], tmp0);
-					Sse2.Store(&ciphertextPtr[i + 1 * 16], tmp1);
-					Sse2.Store(&ciphertextPtr[i + 2 * 16], tmp2);
-					Sse2.Store(&ciphertextPtr[i + 3 * 16], tmp3);
+					Sse2.Store(&ciphertextPtr[(i + 0) * 16], tmp0);
+					Sse2.Store(&ciphertextPtr[(i + 1) * 16], tmp1);
+					Sse2.Store(&ciphertextPtr[(i + 2) * 16], tmp2);
+					Sse2.Store(&ciphertextPtr[(i + 3) * 16], tmp3);
 				}
 
 				for (int i = 0; i < blocks % 4; ++i)
+				{
+					tmp0 = ctr;
+					ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
+					tmp0 = Sse2.Xor(tmp0, key0);
+
+					tmp0 = Aes.Encrypt(tmp0, key1);
+					tmp0 = Aes.Encrypt(tmp0, key2);
+					tmp0 = Aes.Encrypt(tmp0, key3);
+					tmp0 = Aes.Encrypt(tmp0, key4);
+					tmp0 = Aes.Encrypt(tmp0, key5);
+					tmp0 = Aes.Encrypt(tmp0, key6);
+					tmp0 = Aes.Encrypt(tmp0, key7);
+					tmp0 = Aes.Encrypt(tmp0, key8);
+					tmp0 = Aes.Encrypt(tmp0, key9);
+					tmp0 = Aes.Encrypt(tmp0, key10);
+					tmp0 = Aes.Encrypt(tmp0, key11);
+					tmp0 = Aes.Encrypt(tmp0, key12);
+					tmp0 = Aes.Encrypt(tmp0, key13);
+
+					tmp0 = Aes.EncryptLast(tmp0, key14);
+					tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(&plaintextPtr[(remainderPos + i) * 16]));
+					Sse2.Store(&ciphertextPtr[(remainderPos + i) * 16], tmp0);
+				}
+
+				if (remainder != 0)
+				{
+					byte* b = stackalloc byte[16];
+					plaintext.AsSpan(length - remainder).CopyTo(new Span<byte>(b, 16));
+
+					tmp0 = ctr;
+					ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
+					tmp0 = Sse2.Xor(tmp0, key0);
+
+					tmp0 = Aes.Encrypt(tmp0, key1);
+					tmp0 = Aes.Encrypt(tmp0, key2);
+					tmp0 = Aes.Encrypt(tmp0, key3);
+					tmp0 = Aes.Encrypt(tmp0, key4);
+					tmp0 = Aes.Encrypt(tmp0, key5);
+					tmp0 = Aes.Encrypt(tmp0, key6);
+					tmp0 = Aes.Encrypt(tmp0, key7);
+					tmp0 = Aes.Encrypt(tmp0, key8);
+					tmp0 = Aes.Encrypt(tmp0, key9);
+					tmp0 = Aes.Encrypt(tmp0, key10);
+					tmp0 = Aes.Encrypt(tmp0, key11);
+					tmp0 = Aes.Encrypt(tmp0, key12);
+					tmp0 = Aes.Encrypt(tmp0, key13);
+
+					tmp0 = Aes.EncryptLast(tmp0, key14);
+					Sse2.Store(b, Sse2.Xor(tmp0, Sse2.LoadVector128(b)));
+					new Span<byte>(b, remainder).CopyTo(ciphertext.AsSpan(blocks * 16, remainder));
+				}
+			}
+		}
+
+		public static void Encrypt8(byte[] plaintext, byte[] ciphertext, byte[] tag, byte[] roundKeys)
+		{
+			int length = plaintext.Length;
+			int blocks = Math.DivRem(length, 16, out int remainder);
+
+			if (length == 0 && remainder == 0)
+			{
+				return;
+			}
+
+			Vector128<byte> ctr, tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
+			Vector128<byte> data0, data1, data2, data3, data4, data5, data6, data7;
+			var orMask = Sse.StaticCast<uint, byte>(Sse2.SetVector128(0x80000000, 0, 0, 0));
+
+			fixed (byte* tagPtr = tag)
+			{
+				ctr = Sse2.Or(Sse2.LoadVector128(tagPtr), orMask);
+			}
+
+			fixed (byte* plaintextPtr = plaintext)
+			fixed (byte* ciphertextPtr = ciphertext)
+			fixed (byte* roundKeysPtr = roundKeys)
+			{
+				int remainderPos = blocks - blocks % 8;
+
+				var one = Sse2.SetVector128(0, 0, 0, 1);
+				var two = Sse2.SetVector128(0, 0, 0, 2);
+
+				var key0 = Sse2.LoadVector128(&roundKeysPtr[0 * 16]);
+				var key1 = Sse2.LoadVector128(&roundKeysPtr[1 * 16]);
+				var key2 = Sse2.LoadVector128(&roundKeysPtr[2 * 16]);
+				var key3 = Sse2.LoadVector128(&roundKeysPtr[3 * 16]);
+				var key4 = Sse2.LoadVector128(&roundKeysPtr[4 * 16]);
+				var key5 = Sse2.LoadVector128(&roundKeysPtr[5 * 16]);
+				var key6 = Sse2.LoadVector128(&roundKeysPtr[6 * 16]);
+				var key7 = Sse2.LoadVector128(&roundKeysPtr[7 * 16]);
+				var key8 = Sse2.LoadVector128(&roundKeysPtr[8 * 16]);
+				var key9 = Sse2.LoadVector128(&roundKeysPtr[9 * 16]);
+				var key10 = Sse2.LoadVector128(&roundKeysPtr[10 * 16]);
+				var key11 = Sse2.LoadVector128(&roundKeysPtr[11 * 16]);
+				var key12 = Sse2.LoadVector128(&roundKeysPtr[12 * 16]);
+				var key13 = Sse2.LoadVector128(&roundKeysPtr[13 * 16]);
+				var key14 = Sse2.LoadVector128(&roundKeysPtr[14 * 16]);
+
+				for (int i = 0; i < remainderPos; i += 8)
+				{
+					tmp0 = ctr;
+					tmp1 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
+					tmp2 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), two));
+					tmp3 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(tmp2), one));
+					tmp4 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(tmp2), two));
+					tmp5 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(tmp4), one));
+					tmp6 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(tmp4), two));
+					tmp7 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(tmp6), one));
+					ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(tmp6), two));
+
+					tmp0 = Sse2.Xor(tmp0, key0);
+					tmp1 = Sse2.Xor(tmp1, key0);
+					tmp2 = Sse2.Xor(tmp2, key0);
+					tmp3 = Sse2.Xor(tmp3, key0);
+					tmp4 = Sse2.Xor(tmp4, key0);
+					tmp5 = Sse2.Xor(tmp5, key0);
+					tmp6 = Sse2.Xor(tmp6, key0);
+					tmp7 = Sse2.Xor(tmp7, key0);
+
+					tmp0 = Aes.Encrypt(tmp0, key1);
+					tmp1 = Aes.Encrypt(tmp1, key1);
+					tmp2 = Aes.Encrypt(tmp2, key1);
+					tmp3 = Aes.Encrypt(tmp3, key1);
+					tmp4 = Aes.Encrypt(tmp4, key1);
+					tmp5 = Aes.Encrypt(tmp5, key1);
+					tmp6 = Aes.Encrypt(tmp6, key1);
+					tmp7 = Aes.Encrypt(tmp7, key1);
+
+					tmp0 = Aes.Encrypt(tmp0, key2);
+					tmp1 = Aes.Encrypt(tmp1, key2);
+					tmp2 = Aes.Encrypt(tmp2, key2);
+					tmp3 = Aes.Encrypt(tmp3, key2);
+					tmp4 = Aes.Encrypt(tmp4, key2);
+					tmp5 = Aes.Encrypt(tmp5, key2);
+					tmp6 = Aes.Encrypt(tmp6, key2);
+					tmp7 = Aes.Encrypt(tmp7, key2);
+
+					tmp0 = Aes.Encrypt(tmp0, key3);
+					tmp1 = Aes.Encrypt(tmp1, key3);
+					tmp2 = Aes.Encrypt(tmp2, key3);
+					tmp3 = Aes.Encrypt(tmp3, key3);
+					tmp4 = Aes.Encrypt(tmp4, key3);
+					tmp5 = Aes.Encrypt(tmp5, key3);
+					tmp6 = Aes.Encrypt(tmp6, key3);
+					tmp7 = Aes.Encrypt(tmp7, key3);
+
+					tmp0 = Aes.Encrypt(tmp0, key4);
+					tmp1 = Aes.Encrypt(tmp1, key4);
+					tmp2 = Aes.Encrypt(tmp2, key4);
+					tmp3 = Aes.Encrypt(tmp3, key4);
+					tmp4 = Aes.Encrypt(tmp4, key4);
+					tmp5 = Aes.Encrypt(tmp5, key4);
+					tmp6 = Aes.Encrypt(tmp6, key4);
+					tmp7 = Aes.Encrypt(tmp7, key4);
+
+					tmp0 = Aes.Encrypt(tmp0, key5);
+					tmp1 = Aes.Encrypt(tmp1, key5);
+					tmp2 = Aes.Encrypt(tmp2, key5);
+					tmp3 = Aes.Encrypt(tmp3, key5);
+					tmp4 = Aes.Encrypt(tmp4, key5);
+					tmp5 = Aes.Encrypt(tmp5, key5);
+					tmp6 = Aes.Encrypt(tmp6, key5);
+					tmp7 = Aes.Encrypt(tmp7, key5);
+
+					tmp0 = Aes.Encrypt(tmp0, key6);
+					tmp1 = Aes.Encrypt(tmp1, key6);
+					tmp2 = Aes.Encrypt(tmp2, key6);
+					tmp3 = Aes.Encrypt(tmp3, key6);
+					tmp4 = Aes.Encrypt(tmp4, key6);
+					tmp5 = Aes.Encrypt(tmp5, key6);
+					tmp6 = Aes.Encrypt(tmp6, key6);
+					tmp7 = Aes.Encrypt(tmp7, key6);
+
+					tmp0 = Aes.Encrypt(tmp0, key7);
+					tmp1 = Aes.Encrypt(tmp1, key7);
+					tmp2 = Aes.Encrypt(tmp2, key7);
+					tmp3 = Aes.Encrypt(tmp3, key7);
+					tmp4 = Aes.Encrypt(tmp4, key7);
+					tmp5 = Aes.Encrypt(tmp5, key7);
+					tmp6 = Aes.Encrypt(tmp6, key7);
+					tmp7 = Aes.Encrypt(tmp7, key7);
+
+					tmp0 = Aes.Encrypt(tmp0, key8);
+					tmp1 = Aes.Encrypt(tmp1, key8);
+					tmp2 = Aes.Encrypt(tmp2, key8);
+					tmp3 = Aes.Encrypt(tmp3, key8);
+					tmp4 = Aes.Encrypt(tmp4, key8);
+					tmp5 = Aes.Encrypt(tmp5, key8);
+					tmp6 = Aes.Encrypt(tmp6, key8);
+					tmp7 = Aes.Encrypt(tmp7, key8);
+
+					tmp0 = Aes.Encrypt(tmp0, key9);
+					tmp1 = Aes.Encrypt(tmp1, key9);
+					tmp2 = Aes.Encrypt(tmp2, key9);
+					tmp3 = Aes.Encrypt(tmp3, key9);
+					tmp4 = Aes.Encrypt(tmp4, key9);
+					tmp5 = Aes.Encrypt(tmp5, key9);
+					tmp6 = Aes.Encrypt(tmp6, key9);
+					tmp7 = Aes.Encrypt(tmp7, key9);
+
+					tmp0 = Aes.Encrypt(tmp0, key10);
+					tmp1 = Aes.Encrypt(tmp1, key10);
+					tmp2 = Aes.Encrypt(tmp2, key10);
+					tmp3 = Aes.Encrypt(tmp3, key10);
+					tmp4 = Aes.Encrypt(tmp4, key10);
+					tmp5 = Aes.Encrypt(tmp5, key10);
+					tmp6 = Aes.Encrypt(tmp6, key10);
+					tmp7 = Aes.Encrypt(tmp7, key10);
+
+					tmp0 = Aes.Encrypt(tmp0, key11);
+					tmp1 = Aes.Encrypt(tmp1, key11);
+					tmp2 = Aes.Encrypt(tmp2, key11);
+					tmp3 = Aes.Encrypt(tmp3, key11);
+					tmp4 = Aes.Encrypt(tmp4, key11);
+					tmp5 = Aes.Encrypt(tmp5, key11);
+					tmp6 = Aes.Encrypt(tmp6, key11);
+					tmp7 = Aes.Encrypt(tmp7, key11);
+
+					tmp0 = Aes.Encrypt(tmp0, key12);
+					tmp1 = Aes.Encrypt(tmp1, key12);
+					tmp2 = Aes.Encrypt(tmp2, key12);
+					tmp3 = Aes.Encrypt(tmp3, key12);
+					tmp4 = Aes.Encrypt(tmp4, key12);
+					tmp5 = Aes.Encrypt(tmp5, key12);
+					tmp6 = Aes.Encrypt(tmp6, key12);
+					tmp7 = Aes.Encrypt(tmp7, key12);
+
+					tmp0 = Aes.Encrypt(tmp0, key13);
+					tmp1 = Aes.Encrypt(tmp1, key13);
+					tmp2 = Aes.Encrypt(tmp2, key13);
+					tmp3 = Aes.Encrypt(tmp3, key13);
+					tmp4 = Aes.Encrypt(tmp4, key13);
+					tmp5 = Aes.Encrypt(tmp5, key13);
+					tmp6 = Aes.Encrypt(tmp6, key13);
+					tmp7 = Aes.Encrypt(tmp7, key13);
+
+					tmp0 = Aes.EncryptLast(tmp0, key14);
+					tmp1 = Aes.EncryptLast(tmp1, key14);
+					tmp2 = Aes.EncryptLast(tmp2, key14);
+					tmp3 = Aes.EncryptLast(tmp3, key14);
+					tmp4 = Aes.EncryptLast(tmp4, key14);
+					tmp5 = Aes.EncryptLast(tmp5, key14);
+					tmp6 = Aes.EncryptLast(tmp6, key14);
+					tmp7 = Aes.EncryptLast(tmp7, key14);
+
+					data0 = Sse2.LoadVector128(&plaintextPtr[(i + 0) * 16]);
+					data1 = Sse2.LoadVector128(&plaintextPtr[(i + 1) * 16]);
+					data2 = Sse2.LoadVector128(&plaintextPtr[(i + 2) * 16]);
+					data3 = Sse2.LoadVector128(&plaintextPtr[(i + 3) * 16]);
+					data4 = Sse2.LoadVector128(&plaintextPtr[(i + 4) * 16]);
+					data5 = Sse2.LoadVector128(&plaintextPtr[(i + 5) * 16]);
+					data6 = Sse2.LoadVector128(&plaintextPtr[(i + 6) * 16]);
+					data7 = Sse2.LoadVector128(&plaintextPtr[(i + 7) * 16]);
+
+					tmp0 = Sse2.Xor(tmp0, data0);
+					tmp1 = Sse2.Xor(tmp1, data1);
+					tmp2 = Sse2.Xor(tmp2, data2);
+					tmp3 = Sse2.Xor(tmp3, data3);
+					tmp4 = Sse2.Xor(tmp4, data4);
+					tmp5 = Sse2.Xor(tmp5, data5);
+					tmp6 = Sse2.Xor(tmp6, data6);
+					tmp7 = Sse2.Xor(tmp7, data7);
+
+					Sse2.Store(&ciphertextPtr[(i + 0) * 16], tmp0);
+					Sse2.Store(&ciphertextPtr[(i + 1) * 16], tmp1);
+					Sse2.Store(&ciphertextPtr[(i + 2) * 16], tmp2);
+					Sse2.Store(&ciphertextPtr[(i + 3) * 16], tmp3);
+					Sse2.Store(&ciphertextPtr[(i + 4) * 16], tmp4);
+					Sse2.Store(&ciphertextPtr[(i + 5) * 16], tmp5);
+					Sse2.Store(&ciphertextPtr[(i + 6) * 16], tmp6);
+					Sse2.Store(&ciphertextPtr[(i + 7) * 16], tmp7);
+				}
+
+				for (int i = 0; i < blocks % 8; ++i)
 				{
 					tmp0 = ctr;
 					ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
