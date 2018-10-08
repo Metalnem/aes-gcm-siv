@@ -134,7 +134,7 @@ namespace Cryptography
 				Sse2.Store(&roundKeysPtr[0], xmm1);
 				Sse2.Store(&roundKeysPtr[16], xmm3);
 
-				for (int i = 32; i < 14 * 16; i += 32)
+				for (int i = 0; i < 6; ++i)
 				{
 					xmm2 = Ssse3.Shuffle(xmm3, mask);
 					xmm2 = Aes.EncryptLast(xmm2, con1);
@@ -144,7 +144,7 @@ namespace Cryptography
 					xmm4 = Ssse3.Shuffle(xmm1, con3);
 					xmm1 = Sse2.Xor(xmm1, xmm4);
 					xmm1 = Sse2.Xor(xmm1, xmm2);
-					Sse2.Store(&roundKeysPtr[i], xmm1);
+					Sse2.Store(&roundKeysPtr[(i + 1) * 2 * 16], xmm1);
 
 					xmm2 = Sse.StaticCast<uint, byte>(Sse2.Shuffle(Sse.StaticCast<byte, uint>(xmm1), 0xff));
 					xmm2 = Aes.EncryptLast(xmm2, xmm14);
@@ -153,7 +153,7 @@ namespace Cryptography
 					xmm4 = Ssse3.Shuffle(xmm3, con3);
 					xmm3 = Sse2.Xor(xmm4, xmm3);
 					xmm3 = Sse2.Xor(xmm2, xmm3);
-					Sse2.Store(&roundKeysPtr[i + 16], xmm3);
+					Sse2.Store(&roundKeysPtr[((i + 1) * 2 + 1) * 16], xmm3);
 				}
 
 				xmm2 = Ssse3.Shuffle(xmm3, mask);
@@ -366,7 +366,7 @@ namespace Cryptography
 				b1 = Aes.Encrypt(b1, xmm3);
 				Sse2.Store(&roundKeysPtr[16], xmm3);
 
-				for (int i = 32; i < 14 * 16; i += 32)
+				for (int i = 0; i < 6; ++i)
 				{
 					xmm2 = Ssse3.Shuffle(xmm3, mask);
 					xmm2 = Aes.EncryptLast(xmm2, con1);
@@ -376,8 +376,7 @@ namespace Cryptography
 					xmm4 = Ssse3.Shuffle(xmm1, con3);
 					xmm1 = Sse2.Xor(xmm1, xmm4);
 					xmm1 = Sse2.Xor(xmm1, xmm2);
-					Sse2.Store(&roundKeysPtr[i], xmm1);
-
+					Sse2.Store(&roundKeysPtr[(i + 1) * 2 * 16], xmm1);
 					b1 = Aes.Encrypt(b1, xmm1);
 
 					xmm2 = Sse.StaticCast<uint, byte>(Sse2.Shuffle(Sse.StaticCast<byte, uint>(xmm1), 0xff));
@@ -387,8 +386,7 @@ namespace Cryptography
 					xmm4 = Ssse3.Shuffle(xmm3, con3);
 					xmm3 = Sse2.Xor(xmm4, xmm3);
 					xmm3 = Sse2.Xor(xmm2, xmm3);
-					Sse2.Store(&roundKeysPtr[i + 16], xmm3);
-
+					Sse2.Store(&roundKeysPtr[((i + 1) * 2 + 1) * 16], xmm3);
 					b1 = Aes.Encrypt(b1, xmm3);
 				}
 
