@@ -141,15 +141,34 @@ namespace Cryptography.Tests
 
 				AesGcmSiv.Encrypt8(vector.Plaintext, ciphertext, tag, encryptionRoundKeys);
 				Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(ciphertext));
+			}
+		}
 
-				// Compare Encrypt4 to Encrypt8
+		[Fact]
+		public void TestCompareEncrypt4Encrypt8()
+		{
+			var key = new byte[32];
+			var nonce = new byte[12];
+			var associatedData = new byte[0];
 
-				var large = new byte[8 * 16 + 16 + 1];
-				var ciphertext4 = new byte[large.Length];
-				var ciphertext8 = new byte[large.Length];
+			for (int i = 0; i < 1024; ++i)
+			{
+				var roundKeys = new byte[15 * 16];
+				AesGcmSiv.KeySchedule(key, roundKeys);
 
-				AesGcmSiv.Encrypt4(large, ciphertext4, tag, encryptionRoundKeys);
-				AesGcmSiv.Encrypt8(large, ciphertext8, tag, encryptionRoundKeys);
+				var hashKey = new byte[16];
+				var encryptionKey = new byte[32];
+				AesGcmSiv.DeriveKeys(nonce, hashKey, encryptionKey, roundKeys);
+
+				var plaintext = new byte[i];
+				var tag = new byte[16];
+				var encryptionRoundKeys = AesGcmSiv.CalculateTag(nonce, plaintext, associatedData, hashKey, encryptionKey, tag);
+
+				var ciphertext4 = new byte[plaintext.Length];
+				var ciphertext8 = new byte[plaintext.Length];
+
+				AesGcmSiv.Encrypt4(plaintext, ciphertext4, tag, encryptionRoundKeys);
+				AesGcmSiv.Encrypt8(plaintext, ciphertext8, tag, encryptionRoundKeys);
 
 				Assert.Equal(Hex.Encode(ciphertext4), Hex.Encode(ciphertext8));
 			}
