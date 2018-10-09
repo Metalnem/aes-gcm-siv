@@ -65,7 +65,7 @@ namespace Cryptography.Tests
 
 				var tag = new byte[16];
 				var encryptionRoundKeys = new byte[15 * 16];
-				AesGcmSiv.CalculateTag(vector.Nonce, vector.Plaintext, vector.Aad, hashKey, encryptionKey, tag, encryptionRoundKeys);
+				AesGcmSiv.CalculateTagHorner(vector.Nonce, vector.Plaintext, vector.Aad, hashKey, encryptionKey, tag, encryptionRoundKeys);
 
 				var ciphertext = new byte[vector.Plaintext.Length + tag.Length];
 				Array.Copy(tag, 0, ciphertext, ciphertext.Length - tag.Length, tag.Length);

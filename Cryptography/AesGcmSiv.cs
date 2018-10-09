@@ -9,6 +9,8 @@ namespace Cryptography
 {
 	public unsafe sealed class AesGcmSiv : IDisposable
 	{
+		private static readonly byte[] Empty = new byte[0];
+
 		private const int KeySizeInBytes = 32;
 		private const int NonceSizeInBytes = 12;
 		private const int TagSizeInBytes = 16;
@@ -51,15 +53,36 @@ namespace Cryptography
 
 			CheckParameters(plaintext, ciphertext, nonce, tag);
 
-			var hashKey = new byte[16];
-			var encryptionKey = new byte[32];
-			DeriveKeys(nonce, hashKey, encryptionKey, roundKeys);
+			if (associatedData == null)
+			{
+				associatedData = Empty;
+			}
 
-			var encryptionRoundKeys = new byte[15 * 16];
-			CalculateTag(nonce, plaintext, associatedData, hashKey, encryptionKey, tag, encryptionRoundKeys);
+			// TODO: test both methods on all input sizes
+			if (associatedData.Length + plaintext.Length <= 128)
+			{
+				var hashKey = new byte[16];
+				var encryptionKey = new byte[32];
+				DeriveKeys(nonce, hashKey, encryptionKey, roundKeys);
 
-			// TODO: called overload should be based on input length
-			AesGcmSiv.Encrypt4(plaintext, ciphertext, tag, encryptionRoundKeys);
+				var encryptionRoundKeys = new byte[15 * 16];
+				CalculateTagHorner(nonce, plaintext, associatedData, hashKey, encryptionKey, tag, encryptionRoundKeys);
+
+				AesGcmSiv.Encrypt4(plaintext, ciphertext, tag, encryptionRoundKeys);
+			}
+			else
+			{
+				var hashKey = new byte[16];
+				var encryptionKey = new byte[32];
+
+				// TODO: implement the correct method
+				DeriveKeys(nonce, hashKey, encryptionKey, roundKeys);
+
+				var encryptionRoundKeys = new byte[15 * 16];
+				CalculateTagPowersTable(nonce, plaintext, associatedData, hashKey, encryptionKey, tag, encryptionRoundKeys);
+
+				AesGcmSiv.Encrypt8(plaintext, ciphertext, tag, encryptionRoundKeys);
+			}
 		}
 
 		public void Decrypt(
@@ -260,7 +283,7 @@ namespace Cryptography
 			}
 		}
 
-		public static void PolyvalHorner(byte[] tag, byte[] hashKey, byte[] input)
+		public static void PolyvalHorner(byte[] polyval, byte[] hashKey, byte[] input)
 		{
 			int length = input.Length;
 
@@ -272,12 +295,12 @@ namespace Cryptography
 			int blocks = Math.DivRem(length, 16, out int remainder);
 			Vector128<ulong> tmp1, tmp2, tmp3, tmp4, poly, t, h;
 
-			fixed (byte* tagPtr = tag)
+			fixed (byte* polyvalPtr = polyval)
 			fixed (byte* hashKeyPtr = hashKey)
 			fixed (byte* inputPtr = input)
 			{
 				poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
-				t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(tagPtr));
+				t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(polyvalPtr));
 				h = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(hashKeyPtr));
 
 				for (int i = 0; i < blocks; ++i)
@@ -325,7 +348,328 @@ namespace Cryptography
 					t = Sse2.Xor(tmp4, tmp1);
 				}
 
-				Sse2.Store(tagPtr, Sse.StaticCast<ulong, byte>(t));
+				Sse2.Store(polyvalPtr, Sse.StaticCast<ulong, byte>(t));
+			}
+		}
+
+		public static void PolyvalPowersTable(byte[] polyval, byte[] powersTable, byte[] input)
+		{
+			int length = input.Length;
+
+			if (length == 0)
+			{
+				return;
+			}
+
+			int blocks = Math.DivRem(length, 16, out int remainder16);
+			int remainder128 = length % 128 - remainder16;
+
+			Vector128<ulong> data, h, tmp0, tmp1, tmp2, tmp3, tmp4;
+			Vector128<sbyte> tb;
+
+			var xhi = Sse2.SetZeroVector128<ulong>();
+			var poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
+
+			fixed (byte* polyvalPtr = polyval)
+			fixed (byte* powersTablePtr = powersTable)
+			fixed (byte* inputPtr = input)
+			{
+				var t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(polyvalPtr));
+
+				var h0 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTablePtr[0 * 16]));
+				var h1 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTablePtr[1 * 16]));
+				var h2 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTablePtr[2 * 16]));
+				var h3 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTablePtr[3 * 16]));
+				var h4 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTablePtr[4 * 16]));
+				var h5 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTablePtr[5 * 16]));
+				var h6 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTablePtr[6 * 16]));
+				var h7 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTablePtr[7 * 16]));
+
+				if (remainder128 != 0)
+				{
+					int remainder128Blocks = remainder128 / 16;
+					blocks -= remainder128Blocks;
+
+					data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(inputPtr));
+					data = Sse2.Xor(t, data);
+					h = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTablePtr[(remainder128Blocks - 1) * 16]));
+					tmp2 = Pclmulqdq.CarrylessMultiply(data, h, 0x01);
+					tmp0 = Pclmulqdq.CarrylessMultiply(data, h, 0x00);
+					tmp1 = Pclmulqdq.CarrylessMultiply(data, h, 0x11);
+					tmp3 = Pclmulqdq.CarrylessMultiply(data, h, 0x10);
+					tmp2 = Sse2.Xor(tmp2, tmp3);
+
+					for (int i = 1; i < remainder128Blocks; ++i)
+					{
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&inputPtr[i * 16]));
+						h = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTablePtr[(remainder128Blocks - i - 1) * 16]));
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+					}
+
+					tmp3 = Sse2.ShiftRightLogical128BitLane(tmp2, 8);
+					tmp2 = Sse2.ShiftLeftLogical128BitLane(tmp2, 8);
+					xhi = Sse2.Xor(tmp3, tmp1);
+					t = Sse2.Xor(tmp0, tmp2);
+
+					if (blocks == 0)
+					{
+						tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
+						tb = Sse.StaticCast<ulong, sbyte>(t);
+						t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+						t = Sse2.Xor(tmp3, t);
+						tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
+						tb = Sse.StaticCast<ulong, sbyte>(t);
+						t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+						t = Sse2.Xor(tmp3, t);
+						t = Sse2.Xor(xhi, t);
+					}
+				}
+
+				if (blocks != 0)
+				{
+					var fixedInputPtr = inputPtr + remainder128;
+
+					if (remainder128 == 0)
+					{
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[7 * 16]));
+						tmp2 = Pclmulqdq.CarrylessMultiply(data, h0, 0x01);
+						tmp0 = Pclmulqdq.CarrylessMultiply(data, h0, 0x00);
+						tmp1 = Pclmulqdq.CarrylessMultiply(data, h0, 0x11);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h0, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[6 * 16]));
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h1, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h1, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h1, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h1, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[5 * 16]));
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h2, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h2, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h2, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h2, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[4 * 16]));
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h3, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h3, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h3, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h3, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[3 * 16]));
+						tmp4 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h4, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h4, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h4, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h4, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[2 * 16]));
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h5, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h5, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h5, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h5, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[1 * 16]));
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h6, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h6, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h6, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h6, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(fixedInputPtr));
+						data = Sse2.Xor(t, data);
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h7, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h7, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h7, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h7, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						tmp3 = Sse2.ShiftRightLogical128BitLane(tmp2, 8);
+						tmp2 = Sse2.ShiftLeftLogical128BitLane(tmp2, 8);
+						xhi = Sse2.Xor(tmp3, tmp1);
+						t = Sse2.Xor(tmp0, tmp2);
+					}
+
+					for (int i = remainder128 == 0 ? 8 : 0; i < blocks; i += 8)
+					{
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[(i + 7) * 16]));
+						tmp2 = Pclmulqdq.CarrylessMultiply(data, h0, 0x01);
+						tmp0 = Pclmulqdq.CarrylessMultiply(data, h0, 0x00);
+						tmp1 = Pclmulqdq.CarrylessMultiply(data, h0, 0x11);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h0, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[(i + 6) * 16]));
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h1, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h1, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h1, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h1, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[(i + 5) * 16]));
+						tmp4 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
+						tb = Sse.StaticCast<ulong, sbyte>(t);
+						t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h2, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h2, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h2, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h2, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						t = Sse2.Xor(t, tmp4);
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[(i + 4) * 16]));
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h3, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h3, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h3, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h3, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[(i + 3) * 16]));
+						tmp4 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
+						tb = Sse.StaticCast<ulong, sbyte>(t);
+						t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h4, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h4, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h4, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h4, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						t = Sse2.Xor(t, tmp4);
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[(i + 2) * 16]));
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h5, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h5, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h5, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h5, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						t = Sse2.Xor(t, xhi);
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[(i + 1) * 16]));
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h6, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h6, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h6, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h6, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInputPtr[i * 16]));
+						data = Sse2.Xor(t, data);
+
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h7, 0x01);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h7, 0x00);
+						tmp0 = Sse2.Xor(tmp0, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h7, 0x11);
+						tmp1 = Sse2.Xor(tmp1, tmp3);
+						tmp3 = Pclmulqdq.CarrylessMultiply(data, h7, 0x10);
+						tmp2 = Sse2.Xor(tmp2, tmp3);
+
+						tmp3 = Sse2.ShiftRightLogical128BitLane(tmp2, 8);
+						tmp2 = Sse2.ShiftLeftLogical128BitLane(tmp2, 8);
+						xhi = Sse2.Xor(tmp3, tmp1);
+						t = Sse2.Xor(tmp0, tmp2);
+					}
+
+					tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
+					tb = Sse.StaticCast<ulong, sbyte>(t);
+					t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+					t = Sse2.Xor(tmp3, t);
+					tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
+					tb = Sse.StaticCast<ulong, sbyte>(t);
+					t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+					t = Sse2.Xor(tmp3, t);
+					t = Sse2.Xor(xhi, t);
+				}
+
+				if (remainder16 != 0)
+				{
+					byte* b = stackalloc byte[16];
+					new Span<byte>(&inputPtr[length - remainder16], remainder16).CopyTo(new Span<byte>(b, 16));
+
+					data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(b));
+					data = Sse2.Xor(t, data);
+					tmp2 = Pclmulqdq.CarrylessMultiply(data, h0, 0x01);
+					tmp0 = Pclmulqdq.CarrylessMultiply(data, h0, 0x00);
+					tmp1 = Pclmulqdq.CarrylessMultiply(data, h0, 0x11);
+					tmp3 = Pclmulqdq.CarrylessMultiply(data, h0, 0x10);
+					tmp2 = Sse2.Xor(tmp2, tmp3);
+					tmp3 = Sse2.ShiftRightLogical128BitLane(tmp2, 8);
+					tmp2 = Sse2.ShiftLeftLogical128BitLane(tmp2, 8);
+					xhi = Sse2.Xor(tmp3, tmp1);
+					t = Sse2.Xor(tmp0, tmp2);
+
+					tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
+					tb = Sse.StaticCast<ulong, sbyte>(t);
+					t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+					t = Sse2.Xor(tmp3, t);
+					tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
+					tb = Sse.StaticCast<ulong, sbyte>(t);
+					t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+					t = Sse2.Xor(tmp3, t);
+					t = Sse2.Xor(xhi, t);
+				}
+
+				Sse2.Store(polyvalPtr, Sse.StaticCast<ulong, byte>(t));
 			}
 		}
 
@@ -391,7 +735,7 @@ namespace Cryptography
 			}
 		}
 
-		public static void CalculateTag(
+		public static void CalculateTagHorner(
 			byte[] nonce,
 			byte[] plaintext,
 			byte[] associatedData,
@@ -416,6 +760,54 @@ namespace Cryptography
 			PolyvalHorner(polyval, hashKey, associatedData);
 			PolyvalHorner(polyval, hashKey, plaintext);
 			PolyvalHorner(polyval, hashKey, lengthBlock);
+
+			fixed (byte* noncePtr = nonce)
+			fixed (byte* polyvalPtr = polyval)
+			{
+				var n = MemoryMarshal.Cast<byte, int>(nonce);
+
+				var t = Sse2.LoadVector128(polyvalPtr);
+				t = Sse2.Xor(t, Sse.StaticCast<int, byte>(Sse2.SetVector128(0, n[2], n[1], n[0])));
+
+				var andMask = Sse2.SetVector128(0x7fffffffffffffff, 0xffffffffffffffff);
+				t = Sse2.And(t, Sse.StaticCast<ulong, byte>(andMask));
+
+				Sse2.Store(polyvalPtr, t);
+			}
+
+			EncryptTag(polyval, tag, encryptionKey, roundKeys);
+		}
+
+		// TODO: too much duplication
+		public static void CalculateTagPowersTable(
+			byte[] nonce,
+			byte[] plaintext,
+			byte[] associatedData,
+			byte[] hashKey,
+			byte[] encryptionKey,
+			byte[] tag,
+			byte[] roundKeys)
+		{
+			// TODO: stackalloc
+			var powersTable = new byte[8 * 16];
+			InitPowersTable(powersTable, hashKey);
+
+			// TODO: stackalloc
+			var lengthBlock = new byte[16];
+
+			// TODO: use Span<long>
+			fixed (byte* lengthBlockPtr = lengthBlock)
+			{
+				((long*)lengthBlockPtr)[0] = associatedData.LongLength * 8;
+				((long*)lengthBlockPtr)[1] = plaintext.LongLength * 8;
+			}
+
+			// TODO: stackalloc
+			var polyval = new byte[16];
+
+			PolyvalPowersTable(polyval, powersTable, associatedData);
+			PolyvalPowersTable(polyval, powersTable, plaintext);
+			PolyvalPowersTable(polyval, powersTable, lengthBlock);
 
 			fixed (byte* noncePtr = nonce)
 			fixed (byte* polyvalPtr = polyval)
