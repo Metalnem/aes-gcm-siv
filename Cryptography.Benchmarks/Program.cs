@@ -6,7 +6,7 @@ namespace Cryptography.Benchmarks
 	{
 		public static void Main(string[] args)
 		{
-			BenchmarkRunner.Run<PolyvalBenchmark>();
+			BenchmarkRunner.Run<AeadBenchmark>();
 		}
 	}
 }
