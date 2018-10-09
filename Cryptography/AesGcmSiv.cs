@@ -206,7 +206,7 @@ namespace Cryptography
 					b6 = Aes.Encrypt(b6, xmm3);
 				}
 
-				xmm1 = Sse2.LoadVector128(&roundKeysPtr[16 * 14]);
+				xmm1 = Sse2.LoadVector128(&roundKeysPtr[14 * 16]);
 
 				b1 = Aes.EncryptLast(b1, xmm1);
 				b2 = Aes.EncryptLast(b2, xmm1);
@@ -282,7 +282,7 @@ namespace Cryptography
 
 				for (int i = 0; i < blocks; ++i)
 				{
-					t = Sse2.Xor(t, Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&inputPtr[16 * i])));
+					t = Sse2.Xor(t, Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&inputPtr[i * 16])));
 					tmp1 = Pclmulqdq.CarrylessMultiply(t, h, 0x00);
 					tmp4 = Pclmulqdq.CarrylessMultiply(t, h, 0x11);
 					tmp2 = Pclmulqdq.CarrylessMultiply(t, h, 0x10);
