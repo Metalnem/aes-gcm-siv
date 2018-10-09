@@ -13,28 +13,26 @@ namespace Cryptography
 		private const int NonceSizeInBytes = 12;
 		private const int TagSizeInBytes = 16;
 
+		private readonly byte[] roundKeys;
 		private bool disposed;
 
-		public AesGcmSiv(ReadOnlySpan<byte> key)
-		{
-			// TODO: throw if platform not supported
-
-			if (key.Length != KeySizeInBytes)
-			{
-				throw new CryptographicException("Specified key is not a valid size for this algorithm.");
-			}
-		}
+		// TODO: add Span<byte> overloads
+		// TODO: throw if platform not supported
+		// TODO: add IsSupported property
+		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
 
 		public AesGcmSiv(byte[] key)
 		{
-			// TODO: throw if platform not supported
-
 			Exceptions.ThrowIfNull(key, nameof(key));
 
 			if (key.Length != KeySizeInBytes)
 			{
 				throw new CryptographicException("Specified key is not a valid size for this algorithm.");
 			}
+
+			// TODO: call Marshal.AllocHGlobal and align the result
+			roundKeys = new byte[15 * 16];
+			AesGcmSiv.KeySchedule(key, roundKeys);
 		}
 
 		public void Encrypt(
@@ -51,19 +49,17 @@ namespace Cryptography
 			Exceptions.ThrowIfNull(ciphertext, nameof(ciphertext));
 			Exceptions.ThrowIfNull(tag, nameof(tag));
 
-			Encrypt((ReadOnlySpan<byte>)nonce, plaintext, ciphertext, tag, associatedData);
-		}
+			CheckParameters(plaintext, ciphertext, nonce, tag);
 
-		public void Encrypt(
-			ReadOnlySpan<byte> nonce,
-			ReadOnlySpan<byte> plaintext,
-			Span<byte> ciphertext,
-			Span<byte> tag,
-			ReadOnlySpan<byte> associatedData = default)
-		{
-			Exceptions.ThrowIfDisposed(disposed, nameof(AesGcmSiv));
+			var hashKey = new byte[16];
+			var encryptionKey = new byte[32];
+			DeriveKeys(nonce, hashKey, encryptionKey, roundKeys);
 
-			CheckParameters(nonce, plaintext, ciphertext, tag);
+			var encryptionRoundKeys = new byte[15 * 16];
+			CalculateTag(nonce, plaintext, associatedData, hashKey, encryptionKey, tag, encryptionRoundKeys);
+
+			// TODO: called overload should be based on input length
+			AesGcmSiv.Encrypt4(plaintext, ciphertext, tag, encryptionRoundKeys);
 		}
 
 		public void Decrypt(
@@ -80,19 +76,7 @@ namespace Cryptography
 			Exceptions.ThrowIfNull(ciphertext, nameof(ciphertext));
 			Exceptions.ThrowIfNull(tag, nameof(tag));
 
-			Decrypt((ReadOnlySpan<byte>)nonce, ciphertext, tag, plaintext, associatedData);
-		}
-
-		public void Decrypt(
-			ReadOnlySpan<byte> nonce,
-			ReadOnlySpan<byte> ciphertext,
-			ReadOnlySpan<byte> tag,
-			Span<byte> plaintext,
-			ReadOnlySpan<byte> associatedData = default)
-		{
-			Exceptions.ThrowIfDisposed(disposed, nameof(AesGcmSiv));
-
-			CheckParameters(nonce, plaintext, ciphertext, tag);
+			CheckParameters(plaintext, ciphertext, nonce, tag);
 		}
 
 		private static void CheckParameters(
@@ -407,13 +391,14 @@ namespace Cryptography
 			}
 		}
 
-		public static byte[] CalculateTag(
+		public static void CalculateTag(
 			byte[] nonce,
 			byte[] plaintext,
 			byte[] associatedData,
 			byte[] hashKey,
 			byte[] encryptionKey,
-			byte[] tag)
+			byte[] tag,
+			byte[] roundKeys)
 		{
 			// TODO: stackalloc
 			var lengthBlock = new byte[16];
@@ -425,29 +410,28 @@ namespace Cryptography
 				((long*)lengthBlockPtr)[1] = plaintext.LongLength * 8;
 			}
 
-			PolyvalHorner(tag, hashKey, associatedData);
-			PolyvalHorner(tag, hashKey, plaintext);
-			PolyvalHorner(tag, hashKey, lengthBlock);
+			// TODO: stackalloc
+			var polyval = new byte[16];
+
+			PolyvalHorner(polyval, hashKey, associatedData);
+			PolyvalHorner(polyval, hashKey, plaintext);
+			PolyvalHorner(polyval, hashKey, lengthBlock);
 
 			fixed (byte* noncePtr = nonce)
-			fixed (byte* tagPtr = tag)
+			fixed (byte* polyvalPtr = polyval)
 			{
 				var n = MemoryMarshal.Cast<byte, int>(nonce);
 
-				var t = Sse2.LoadVector128(tagPtr);
+				var t = Sse2.LoadVector128(polyvalPtr);
 				t = Sse2.Xor(t, Sse.StaticCast<int, byte>(Sse2.SetVector128(0, n[2], n[1], n[0])));
 
 				var andMask = Sse2.SetVector128(0x7fffffffffffffff, 0xffffffffffffffff);
 				t = Sse2.And(t, Sse.StaticCast<ulong, byte>(andMask));
 
-				Sse2.Store(tagPtr, t);
+				Sse2.Store(polyvalPtr, t);
 			}
 
-			// TODO: encapsulate in a struct
-			byte[] roundKeys = new byte[15 * 16];
-			EncryptTag(tag, tag, encryptionKey, roundKeys);
-
-			return roundKeys;
+			EncryptTag(polyval, tag, encryptionKey, roundKeys);
 		}
 
 		public static void Encrypt4(byte[] plaintext, byte[] ciphertext, byte[] tag, byte[] roundKeys)
@@ -931,6 +915,7 @@ namespace Cryptography
 		{
 			if (!disposed)
 			{
+				CryptographicOperations.ZeroMemory(roundKeys);
 				disposed = true;
 			}
 		}

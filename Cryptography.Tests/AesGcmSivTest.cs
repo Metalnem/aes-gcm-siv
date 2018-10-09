@@ -64,7 +64,8 @@ namespace Cryptography.Tests
 				AesGcmSiv.DeriveKeys(vector.Nonce, hashKey, encryptionKey, roundKeys);
 
 				var tag = new byte[16];
-				var encryptionRoundKeys = AesGcmSiv.CalculateTag(vector.Nonce, vector.Plaintext, vector.Aad, hashKey, encryptionKey, tag);
+				var encryptionRoundKeys = new byte[15 * 16];
+				AesGcmSiv.CalculateTag(vector.Nonce, vector.Plaintext, vector.Aad, hashKey, encryptionKey, tag, encryptionRoundKeys);
 
 				var ciphertext = new byte[vector.Plaintext.Length + tag.Length];
 				Array.Copy(tag, 0, ciphertext, ciphertext.Length - tag.Length, tag.Length);
@@ -74,6 +75,17 @@ namespace Cryptography.Tests
 
 				AesGcmSiv.Encrypt8(vector.Plaintext, ciphertext, tag, encryptionRoundKeys);
 				Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(ciphertext));
+
+				using (var siv = new AesGcmSiv(vector.Key))
+				{
+					var output = new byte[vector.Plaintext.Length];
+					siv.Encrypt(vector.Nonce, vector.Plaintext, output, tag, vector.Aad);
+
+					output.CopyTo(ciphertext, 0);
+					tag.AsSpan().CopyTo(ciphertext.AsSpan(ciphertext.Length - tag.Length));
+
+					Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(ciphertext));
+				}
 			}
 		}
 
