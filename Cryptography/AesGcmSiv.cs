@@ -279,13 +279,13 @@ namespace Cryptography
 		public static void PolyvalHorner(byte[] tag, byte[] hashKey, byte[] input)
 		{
 			int length = input.Length;
-			int blocks = Math.DivRem(length, 16, out int remainder);
 
-			if (length == 0 && remainder == 0)
+			if (length == 0)
 			{
 				return;
 			}
 
+			int blocks = Math.DivRem(length, 16, out int remainder);
 			Vector128<ulong> tmp1, tmp2, tmp3, tmp4, poly, t, h;
 
 			fixed (byte* tagPtr = tag)
@@ -453,16 +453,17 @@ namespace Cryptography
 		public static void Encrypt4(byte[] plaintext, byte[] ciphertext, byte[] tag, byte[] roundKeys)
 		{
 			int length = plaintext.Length;
-			int blocks = Math.DivRem(length, 16, out int remainder16);
-			int remainder16Pos = length - remainder16;
 
-			if (length == 0 && remainder16 == 0)
+			if (length == 0)
 			{
 				return;
 			}
 
+			int blocks = Math.DivRem(length, 16, out int remainder16);
+			int remainder16Pos = length - remainder16;
+
 			Vector128<byte> ctr, tmp0, tmp1, tmp2, tmp3, data0, data1, data2, data3;
-			var orMask = Sse.StaticCast<uint, byte>(Sse2.SetVector128(0x80000000, 0, 0, 0));
+			Vector128<byte> orMask = Sse.StaticCast<uint, byte>(Sse2.SetVector128(0x80000000, 0, 0, 0));
 
 			fixed (byte* tagPtr = tag)
 			{
@@ -652,17 +653,18 @@ namespace Cryptography
 		public static void Encrypt8(byte[] plaintext, byte[] ciphertext, byte[] tag, byte[] roundKeys)
 		{
 			int length = plaintext.Length;
-			int blocks = Math.DivRem(length, 16, out int remainder16);
-			int remainder16Pos = length - remainder16;
 
-			if (length == 0 && remainder16 == 0)
+			if (length == 0)
 			{
 				return;
 			}
 
+			int blocks = Math.DivRem(length, 16, out int remainder16);
+			int remainder16Pos = length - remainder16;
+
 			Vector128<byte> ctr, tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
 			Vector128<byte> data0, data1, data2, data3, data4, data5, data6, data7;
-			var orMask = Sse.StaticCast<uint, byte>(Sse2.SetVector128(0x80000000, 0, 0, 0));
+			Vector128<byte> orMask = Sse.StaticCast<uint, byte>(Sse2.SetVector128(0x80000000, 0, 0, 0));
 
 			fixed (byte* tagPtr = tag)
 			{
