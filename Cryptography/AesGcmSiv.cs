@@ -16,8 +16,12 @@ namespace Cryptography
 		private readonly byte[] roundKeys;
 		private bool disposed;
 
+		// TODO: fix code duplication in two CalculateTag methods
+		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
+		// TODO: implement the correct key derivation method for encrypting large inputs
 		// TODO: add benchmark results to README
 		// TODO: add libsodium and miscreant to benchmarks
+		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
 		// TODO: add Span<byte> overloads
 		// TODO: throw if platform not supported
 		// TODO: add IsSupported property
@@ -25,6 +29,8 @@ namespace Cryptography
 		// TODO: make all private methods private
 		// TODO: test max plaintext size
 		// TODO: test both polyval and encrypt methods on all input sizes
+		// TODO: try to pipeline CLMUL instructions and to load powers as needed
+		// TODO: move unsafe implementations to separate file
 
 		public AesGcmSiv(byte[] key)
 		{
@@ -35,7 +41,6 @@ namespace Cryptography
 				throw new CryptographicException("Specified key is not a valid size for this algorithm.");
 			}
 
-			// TODO: call Marshal.AllocHGlobal and align the result
 			roundKeys = new byte[15 * 16];
 			KeySchedule(key, roundKeys);
 		}
@@ -101,7 +106,6 @@ namespace Cryptography
 				}
 				else
 				{
-					// TODO: implement the correct key derivation method
 					DeriveKeys(noncePtr, hashKey, encryptionKey, roundKeysPtr);
 
 					CalculateTagPowersTable(
@@ -773,7 +777,6 @@ namespace Cryptography
 			EncryptTag(polyval, tag, encryptionKey, roundKeys);
 		}
 
-		// TODO: too much duplication
 		public static void CalculateTagPowersTable(
 			byte* nonce,
 			byte* plaintext,
