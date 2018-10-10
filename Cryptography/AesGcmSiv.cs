@@ -16,6 +16,8 @@ namespace Cryptography
 		private readonly byte[] roundKeys;
 		private bool disposed;
 
+		// TODO: add benchmark results to README
+		// TODO: add libsodium and miscreant to benchmarks
 		// TODO: add Span<byte> overloads
 		// TODO: throw if platform not supported
 		// TODO: add IsSupported property
