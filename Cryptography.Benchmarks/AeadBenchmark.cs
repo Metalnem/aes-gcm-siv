@@ -14,7 +14,7 @@ namespace Cryptography.Benchmarks
 		private AesGcm gcm;
 		private AesGcmSiv siv;
 
-		[Params(4096, 8192)]
+		[Params(8192)]
 		public int Size { get; set; }
 
 		[GlobalSetup]
