@@ -16,34 +16,6 @@ namespace Cryptography.Tests
 		private const string Encryption1000 = "Vectors/encryption-1000.json";
 
 		[Fact]
-		public void TestInitPowersTable8() => TestInitPowersTable(8);
-
-		[Fact]
-		public void TestInitPowersTable6() => TestInitPowersTable(6);
-
-		private void TestInitPowersTable(int size)
-		{
-			var powersTable = new byte[size * 16];
-			var hashKey = Hex.Decode("d8733394680050b0610782116bed63c4");
-
-			AesGcmSiv.InitPowersTable(powersTable, hashKey);
-
-			var powers = new byte[size][];
-			powers[0] = hashKey;
-
-			for (int i = 1; i < size; ++i)
-			{
-				powers[i] = new byte[16];
-				AesGcmSiv.PolyvalHorner(powers[i], hashKey, powers[i - 1]);
-			}
-
-			var expected = Hex.Encode(powersTable);
-			var actual = Hex.Encode(powers.SelectMany(b => b).ToArray());
-
-			Assert.Equal(expected, actual);
-		}
-
-		[Fact]
 		public void TestEncrypt()
 		{
 			var files = new string[]
@@ -56,35 +28,17 @@ namespace Cryptography.Tests
 
 			foreach (var vector in files.SelectMany(LoadVectors))
 			{
-				var roundKeys = new byte[15 * 16];
-				AesGcmSiv.KeySchedule(vector.Key, roundKeys);
-
-				var hashKey = new byte[16];
-				var encryptionKey = new byte[32];
-				AesGcmSiv.DeriveKeys(vector.Nonce, hashKey, encryptionKey, roundKeys);
-
-				var tag = new byte[16];
-				var encryptionRoundKeys = new byte[15 * 16];
-				AesGcmSiv.CalculateTagHorner(vector.Nonce, vector.Plaintext, vector.Aad, hashKey, encryptionKey, tag, encryptionRoundKeys);
-
-				var ciphertext = new byte[vector.Plaintext.Length + tag.Length];
-				Array.Copy(tag, 0, ciphertext, ciphertext.Length - tag.Length, tag.Length);
-
-				AesGcmSiv.Encrypt4(vector.Plaintext, ciphertext, tag, encryptionRoundKeys);
-				Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(ciphertext));
-
-				AesGcmSiv.Encrypt8(vector.Plaintext, ciphertext, tag, encryptionRoundKeys);
-				Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(ciphertext));
-
 				using (var siv = new AesGcmSiv(vector.Key))
 				{
-					var output = new byte[vector.Plaintext.Length];
-					siv.Encrypt(vector.Nonce, vector.Plaintext, output, tag, vector.Aad);
+					var tag = new byte[16];
+					var ciphertext = new byte[vector.Plaintext.Length];
+					siv.Encrypt(vector.Nonce, vector.Plaintext, ciphertext, tag, vector.Aad);
 
-					output.CopyTo(ciphertext, 0);
-					tag.AsSpan().CopyTo(ciphertext.AsSpan(ciphertext.Length - tag.Length));
+					var result = new byte[vector.Plaintext.Length + tag.Length];
+					ciphertext.CopyTo(result, 0);
+					tag.AsSpan().CopyTo(result.AsSpan(result.Length - tag.Length));
 
-					Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(ciphertext));
+					Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(result));
 				}
 			}
 		}
