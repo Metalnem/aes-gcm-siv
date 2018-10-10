@@ -25,7 +25,7 @@ namespace Cryptography
 
 		public AesGcmSiv(byte[] key)
 		{
-			Exceptions.ThrowIfNull(key, nameof(key));
+			ThrowIfNull(key, nameof(key));
 
 			if (key.Length != KeySizeInBytes)
 			{
@@ -34,7 +34,7 @@ namespace Cryptography
 
 			// TODO: call Marshal.AllocHGlobal and align the result
 			roundKeys = new byte[15 * 16];
-			AesGcmSiv.KeySchedule(key, roundKeys);
+			KeySchedule(key, roundKeys);
 		}
 
 		public void Encrypt(
@@ -44,12 +44,12 @@ namespace Cryptography
 			byte[] tag,
 			byte[] associatedData = null)
 		{
-			Exceptions.ThrowIfDisposed(disposed, nameof(AesGcmSiv));
+			ThrowIfDisposed();
 
-			Exceptions.ThrowIfNull(nonce, nameof(nonce));
-			Exceptions.ThrowIfNull(plaintext, nameof(plaintext));
-			Exceptions.ThrowIfNull(ciphertext, nameof(ciphertext));
-			Exceptions.ThrowIfNull(tag, nameof(tag));
+			ThrowIfNull(nonce, nameof(nonce));
+			ThrowIfNull(plaintext, nameof(plaintext));
+			ThrowIfNull(ciphertext, nameof(ciphertext));
+			ThrowIfNull(tag, nameof(tag));
 
 			CheckParameters(plaintext, ciphertext, nonce, tag);
 
@@ -63,25 +63,22 @@ namespace Cryptography
 			{
 				var hashKey = new byte[16];
 				var encryptionKey = new byte[32];
-				DeriveKeys(nonce, hashKey, encryptionKey, roundKeys);
-
 				var encryptionRoundKeys = new byte[15 * 16];
-				CalculateTagHorner(nonce, plaintext, associatedData, hashKey, encryptionKey, tag, encryptionRoundKeys);
 
-				AesGcmSiv.Encrypt4(plaintext, ciphertext, tag, encryptionRoundKeys);
+				DeriveKeys(nonce, hashKey, encryptionKey, roundKeys);
+				CalculateTagHorner(nonce, plaintext, associatedData, hashKey, encryptionKey, tag, encryptionRoundKeys);
+				Encrypt4(plaintext, ciphertext, tag, encryptionRoundKeys);
 			}
 			else
 			{
 				var hashKey = new byte[16];
 				var encryptionKey = new byte[32];
+				var encryptionRoundKeys = new byte[15 * 16];
 
 				// TODO: implement the correct method
 				DeriveKeys(nonce, hashKey, encryptionKey, roundKeys);
-
-				var encryptionRoundKeys = new byte[15 * 16];
 				CalculateTagPowersTable(nonce, plaintext, associatedData, hashKey, encryptionKey, tag, encryptionRoundKeys);
-
-				AesGcmSiv.Encrypt8(plaintext, ciphertext, tag, encryptionRoundKeys);
+				Encrypt8(plaintext, ciphertext, tag, encryptionRoundKeys);
 			}
 		}
 
@@ -92,12 +89,12 @@ namespace Cryptography
 			byte[] plaintext,
 			byte[] associatedData = null)
 		{
-			Exceptions.ThrowIfDisposed(disposed, nameof(AesGcmSiv));
+			ThrowIfDisposed();
 
-			Exceptions.ThrowIfNull(nonce, nameof(nonce));
-			Exceptions.ThrowIfNull(plaintext, nameof(plaintext));
-			Exceptions.ThrowIfNull(ciphertext, nameof(ciphertext));
-			Exceptions.ThrowIfNull(tag, nameof(tag));
+			ThrowIfNull(nonce, nameof(nonce));
+			ThrowIfNull(plaintext, nameof(plaintext));
+			ThrowIfNull(ciphertext, nameof(ciphertext));
+			ThrowIfNull(tag, nameof(tag));
 
 			CheckParameters(plaintext, ciphertext, nonce, tag);
 		}
@@ -126,7 +123,7 @@ namespace Cryptography
 
 		public static void KeySchedule(byte[] key, byte[] roundKeys)
 		{
-			Vector128<byte> xmm1, xmm2, xmm3, xmm14, xmm4, con1, con3, mask;
+			Vector128<byte> xmm1, xmm2, xmm3, xmm4, xmm14, con1, con3, mask;
 
 			fixed (byte* keyPtr = key)
 			fixed (byte* roundKeysPtr = roundKeys)
@@ -417,19 +414,6 @@ namespace Cryptography
 					tmp2 = Sse2.ShiftLeftLogical128BitLane(tmp2, 8);
 					xhi = Sse2.Xor(tmp3, tmp1);
 					t = Sse2.Xor(tmp0, tmp2);
-
-					if (blocks == 0)
-					{
-						tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
-						tb = Sse.StaticCast<ulong, sbyte>(t);
-						t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
-						t = Sse2.Xor(tmp3, t);
-						tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
-						tb = Sse.StaticCast<ulong, sbyte>(t);
-						t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
-						t = Sse2.Xor(tmp3, t);
-						t = Sse2.Xor(xhi, t);
-					}
 				}
 
 				if (blocks != 0)
@@ -629,7 +613,10 @@ namespace Cryptography
 						xhi = Sse2.Xor(tmp3, tmp1);
 						t = Sse2.Xor(tmp0, tmp2);
 					}
+				}
 
+				if (blocks != 0 || remainder128 != 0)
+				{
 					tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
 					tb = Sse.StaticCast<ulong, sbyte>(t);
 					t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
@@ -1309,6 +1296,22 @@ namespace Cryptography
 			{
 				CryptographicOperations.ZeroMemory(roundKeys);
 				disposed = true;
+			}
+		}
+
+		private static void ThrowIfNull(object value, string name)
+		{
+			if (value == null)
+			{
+				throw new ArgumentNullException(name);
+			}
+		}
+
+		private void ThrowIfDisposed()
+		{
+			if (disposed)
+			{
+				throw new ObjectDisposedException(nameof(AesGcmSiv));
 			}
 		}
 	}
