@@ -1,4 +1,3 @@
-using System;
 using System.Security.Cryptography;
 using BenchmarkDotNet.Attributes;
 
@@ -15,7 +14,7 @@ namespace Cryptography.Benchmarks
 		private AesGcm gcm;
 		private AesGcmSiv siv;
 
-		[Params(128, 1024, 4096, 8192)]
+		[Params(4096, 8192)]
 		public int Size { get; set; }
 
 		[GlobalSetup]
