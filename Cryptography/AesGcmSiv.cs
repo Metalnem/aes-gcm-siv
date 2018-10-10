@@ -20,6 +20,9 @@ namespace Cryptography
 		// TODO: throw if platform not supported
 		// TODO: add IsSupported property
 		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
+		// TODO: make all private methods private
+		// TODO: test max plaintext size
+		// TODO: test both polyval and encrypt methods on all input sizes
 
 		public AesGcmSiv(byte[] key)
 		{
@@ -76,7 +79,6 @@ namespace Cryptography
 			fixed (byte* tagPtr = tag)
 			fixed (byte* associatedDataPtr = associatedData)
 			{
-				// TODO: test both methods on all input sizes
 				if (plaintextLength + associatedDataLength <= 128)
 				{
 					DeriveKeys(noncePtr, hashKey, encryptionKey, roundKeysPtr);
@@ -286,7 +288,7 @@ namespace Cryptography
 			Sse2.StoreLow((long*)encryptionKey + 3, Sse.StaticCast<byte, long>(b6));
 		}
 
-		public static void InitPowersTable(byte* powersTable, int length, byte* hashKey)
+		public static void InitPowersTable(byte* powersTable, int size, byte* hashKey)
 		{
 			Vector128<ulong> tmp0, tmp1, tmp2, tmp3, tmp4, poly, t;
 
@@ -295,7 +297,7 @@ namespace Cryptography
 			tmp0 = t;
 			Sse2.Store(powersTable, Sse.StaticCast<ulong, byte>(t));
 
-			for (int i = 1; i < length; ++i)
+			for (int i = 1; i < size; ++i)
 			{
 				tmp1 = Pclmulqdq.CarrylessMultiply(t, tmp0, 0x00);
 				tmp4 = Pclmulqdq.CarrylessMultiply(t, tmp0, 0x11);
