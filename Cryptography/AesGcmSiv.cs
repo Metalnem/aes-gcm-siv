@@ -16,6 +16,10 @@ namespace Cryptography
 		private readonly byte[] roundKeys;
 		private bool disposed;
 
+		// TODO: pin arrays instead of spans
+		// TODO: mark as unsafe only methods, not the whole class
+		// TOOD: restrict the number of plaintext blocks
+		// TODO: add BoringSSL docs
 		// TODO: fix code duplication in two CalculateTag methods
 		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
 		// TODO: implement the correct key derivation method for encrypting large inputs

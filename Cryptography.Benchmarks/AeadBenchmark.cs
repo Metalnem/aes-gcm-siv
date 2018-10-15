@@ -31,13 +31,13 @@ namespace Cryptography.Benchmarks
 			siv = new AesGcmSiv(key);
 		}
 
-		[Benchmark]
+		[Benchmark(Description = "AES-GCM")]
 		public void BenchmarkAesGcm()
 		{
 			gcm.Encrypt(nonce, plaintext, ciphertext, tag);
 		}
 
-		[Benchmark]
+		[Benchmark(Description = "AES-GCM-SIV")]
 		public void BenchmarkAesGcmSiv()
 		{
 			siv.Encrypt(nonce, plaintext, ciphertext, tag);
