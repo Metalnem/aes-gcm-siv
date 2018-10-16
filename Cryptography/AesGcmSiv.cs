@@ -18,12 +18,11 @@ namespace Cryptography
 		private readonly byte[] roundKeys;
 		private bool disposed;
 
+		// TODO: test max plaintext size
 		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
-		// TOOD: restrict the number of plaintext blocks
 		// TODO: add BoringSSL docs
 		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
 		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
-		// TODO: test max plaintext size
 		// TODO: test both polyval and encrypt methods on all input sizes
 		// TODO: try to pipeline CLMUL instructions and to load powers as needed
 
@@ -170,6 +169,21 @@ namespace Cryptography
 			ThrowIfNull(tag, nameof(tag));
 
 			CheckParameters(plaintext, ciphertext, nonce, tag);
+
+			if (associatedData is null)
+			{
+				associatedData = Empty;
+			}
+
+			fixed (byte* noncePtr = nonce)
+			fixed (byte* ks = roundKeys)
+			fixed (byte* ct = ciphertext)
+			fixed (byte* tagPtr = tag)
+			fixed (byte* pt = plaintext)
+			fixed (byte* ad = associatedData)
+			{
+				Decrypt(noncePtr, ks, ct, ciphertext.Length, tagPtr, pt, ad, associatedData.Length);
+			}
 		}
 
 		public void Decrypt(
@@ -181,6 +195,21 @@ namespace Cryptography
 		{
 			ThrowIfDisposed();
 			CheckParameters(plaintext, ciphertext, nonce, tag);
+
+			fixed (byte* noncePtr = nonce)
+			fixed (byte* ks = roundKeys)
+			fixed (byte* ct = ciphertext)
+			fixed (byte* tagPtr = tag)
+			fixed (byte* pt = plaintext)
+			fixed (byte* ad = associatedData)
+			{
+				Decrypt(noncePtr, ks, ct, ciphertext.Length, tagPtr, pt, ad, associatedData.Length);
+			}
+		}
+
+		private void Decrypt(byte* nonce, byte* ks, byte* ct, int ctLen, byte* tag, byte* pt, byte* ad, int adLen)
+		{
+			throw new NotImplementedException();
 		}
 
 		private static void CheckParameters(
