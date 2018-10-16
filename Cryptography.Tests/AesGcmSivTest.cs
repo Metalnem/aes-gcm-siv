@@ -49,11 +49,22 @@ namespace Cryptography.Tests
 			var nonce = new byte[12];
 			var plaintext = new byte[0x7fffffc7];
 			var tag = new byte[16];
+			var empty = new byte[0];
 
 			using (var siv = new AesGcmSiv(key))
 			{
 				siv.Encrypt(nonce, plaintext, plaintext, tag);
 				Assert.Equal("b8f9d292c80c757ce0639ee04dba3ebd", Hex.Encode(tag));
+
+				Array.Clear(plaintext, 0, plaintext.Length);
+
+				siv.Encrypt(nonce, empty, empty, tag, plaintext);
+				Assert.Equal("a6126fd232ed46bfa639cef6418b14fd", Hex.Encode(tag));
+
+				Array.Clear(plaintext, 0, plaintext.Length);
+
+				siv.Encrypt(nonce, plaintext, plaintext, tag, plaintext);
+				Assert.Equal("6d15c063e7c3d68db84201d887ddde46", Hex.Encode(tag));
 			}
 		}
 

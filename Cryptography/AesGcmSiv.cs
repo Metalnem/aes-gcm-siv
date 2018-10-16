@@ -18,12 +18,14 @@ namespace Cryptography
 		private readonly byte[] roundKeys;
 		private bool disposed;
 
-		// TODO: test max plaintext size
-		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
-		// TODO: add BoringSSL docs
-		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
-		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
+		// TODO: update project file and README
 		// TODO: test both polyval and encrypt methods on all input sizes
+		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
+		// TODO: implement decryption
+		// TODO: add more tests (parameter validation and modified inputs, for example)
+		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
+		// TODO: reuse AesGcm and BoringSSL docs
+		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
 		// TODO: try to pipeline CLMUL instructions and to load powers as needed
 
 		public AesGcmSiv(byte[] key)
