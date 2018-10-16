@@ -4,6 +4,7 @@ using BenchmarkDotNet.Attributes;
 namespace Cryptography.Benchmarks
 {
 	[InProcess]
+	[MarkdownExporter]
 	public class AeadBenchmark
 	{
 		private byte[] nonce;
@@ -31,7 +32,7 @@ namespace Cryptography.Benchmarks
 			siv = new AesGcmSiv(key);
 		}
 
-		[Benchmark(Description = "AES-GCM")]
+		[Benchmark(Baseline = true, Description = "AES-GCM")]
 		public void BenchmarkAesGcm()
 		{
 			gcm.Encrypt(nonce, plaintext, ciphertext, tag);
