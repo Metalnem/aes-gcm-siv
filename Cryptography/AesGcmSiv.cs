@@ -18,6 +18,8 @@ namespace Cryptography
 		private readonly byte[] roundKeys;
 		private bool disposed;
 
+		// TODO: add Windows benchmarks
+		// TODO: pin KeySchedule parameters outside the method
 		// TODO: throw if platform not supported
 		// TODO: assign initial vector values in place
 		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
@@ -28,7 +30,6 @@ namespace Cryptography
 		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
 		// TODO: implement the correct key derivation method for encrypting large inputs
 		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
-		// TODO: make all private methods private
 		// TODO: test max plaintext size
 		// TODO: test both polyval and encrypt methods on all input sizes
 		// TODO: try to pipeline CLMUL instructions and to load powers as needed
@@ -179,7 +180,7 @@ namespace Cryptography
 			}
 		}
 
-		public static void KeySchedule(byte[] key, byte[] roundKeys)
+		private static void KeySchedule(byte[] key, byte[] roundKeys)
 		{
 			Vector128<byte> xmm1, xmm2, xmm3, xmm4, xmm14, con1, con3, mask;
 
@@ -229,7 +230,7 @@ namespace Cryptography
 			}
 		}
 
-		public static void DeriveKeys(byte* nonce, byte* ks, byte* hashKey, byte* encryptionKey)
+		private static void DeriveKeys(byte* nonce, byte* ks, byte* hashKey, byte* encryptionKey)
 		{
 			Vector128<byte> xmm1, xmm3, b1, b2, b3, b4, b5, b6;
 			Vector128<int> one = Sse2.SetVector128(0, 0, 0, 1);
@@ -298,7 +299,7 @@ namespace Cryptography
 			Sse2.StoreLow((long*)encryptionKey + 3, Sse.StaticCast<byte, long>(b6));
 		}
 
-		public static void InitPowersTable(byte* powersTable, int size, byte* hashKey)
+		private static void InitPowersTable(byte* powersTable, int size, byte* hashKey)
 		{
 			Vector128<ulong> tmp0, tmp1, tmp2, tmp3, tmp4, poly, t;
 
@@ -329,7 +330,7 @@ namespace Cryptography
 			}
 		}
 
-		public static void PolyvalHorner(byte* polyval, byte* hashKey, byte* input, int length)
+		private static void PolyvalHorner(byte* polyval, byte* hashKey, byte* input, int length)
 		{
 			if (length == 0)
 			{
@@ -391,7 +392,7 @@ namespace Cryptography
 			Sse2.Store(polyval, Sse.StaticCast<ulong, byte>(t));
 		}
 
-		public static void PolyvalPowersTable(byte* polyval, byte* powersTable, byte* input, int length)
+		private static void PolyvalPowersTable(byte* polyval, byte* powersTable, byte* input, int length)
 		{
 			if (length == 0)
 			{
@@ -694,7 +695,7 @@ namespace Cryptography
 			Sse2.Store(polyval, Sse.StaticCast<ulong, byte>(t));
 		}
 
-		public static void EncryptTag(byte* pt, byte* ct, byte* key, byte* ks)
+		private static void EncryptTag(byte* pt, byte* ct, byte* key, byte* ks)
 		{
 			Vector128<byte> xmm1, xmm2, xmm3, xmm4, xmm14, b1, con1, con3, mask;
 
@@ -748,7 +749,7 @@ namespace Cryptography
 			Sse2.Store(ct, b1);
 		}
 
-		public static void CalculateTagHorner(
+		private static void CalculateTagHorner(
 			byte* nonce,
 			byte* pt,
 			int ptLen,
@@ -781,7 +782,7 @@ namespace Cryptography
 			EncryptTag(polyval, tag, encryptionKey, ks);
 		}
 
-		public static void CalculateTagPowersTable(
+		private static void CalculateTagPowersTable(
 			byte* nonce,
 			byte* pt,
 			int ptLen,
@@ -817,7 +818,7 @@ namespace Cryptography
 			EncryptTag(polyval, tag, encryptionKey, ks);
 		}
 
-		public static void Encrypt4(byte* pt, int ptLen, byte* ct, byte* tag, byte* ks)
+		private static void Encrypt4(byte* pt, int ptLen, byte* ct, byte* tag, byte* ks)
 		{
 			if (ptLen == 0)
 			{
@@ -920,7 +921,7 @@ namespace Cryptography
 			}
 		}
 
-		public static void Encrypt8(byte* pt, int ptLen, byte* ct, byte* tag, byte* ks)
+		private static void Encrypt8(byte* pt, int ptLen, byte* ct, byte* tag, byte* ks)
 		{
 			if (ptLen == 0)
 			{
