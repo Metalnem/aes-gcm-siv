@@ -7,6 +7,7 @@ namespace Cryptography.Benchmarks
 	[MarkdownExporter]
 	public class AeadBenchmark
 	{
+		private byte[] key;
 		private byte[] nonce;
 		private byte[] plaintext;
 		private byte[] ciphertext;
@@ -21,21 +22,26 @@ namespace Cryptography.Benchmarks
 		[GlobalSetup]
 		public void GlobalSetup()
 		{
+			key = new byte[32];
 			nonce = new byte[12];
 			plaintext = new byte[Size];
 			ciphertext = new byte[Size];
 			tag = new byte[16];
 
-			var key = new byte[32];
-
 			gcm = new AesGcm(key);
 			siv = new AesGcmSiv(key);
 		}
 
-		[Benchmark(Baseline = true, Description = "AES-GCM")]
-		public void BenchmarkAesGcm()
+		[Benchmark(Baseline = true, Description = "AES-GCM (native)")]
+		public void BenchmarkAesGcmNative()
 		{
 			gcm.Encrypt(nonce, plaintext, ciphertext, tag);
+		}
+
+		[Benchmark(Description = "AES-GCM (libsodium)")]
+		public void BenchmarkAesGcmLibsodium()
+		{
+			Libsodium.Encrypt(key, nonce, plaintext, ciphertext, tag, null);
 		}
 
 		[Benchmark(Description = "AES-GCM-SIV")]
