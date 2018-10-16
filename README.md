@@ -1,7 +1,7 @@
 # AES-GCM-SIV [![license][license-shield]][license-link]
 
 C# implementation of [AES-GCM-SIV] nonce misuse-resistant authenticated encryption,
-defined in [draft-irtf-cfrg-gcmsiv-08]. Work in progress.
+defined in [draft-irtf-cfrg-gcmsiv-08].
 
 [license-shield]: https://img.shields.io/badge/license-MIT-blue.svg?style=flat
 [license-link]: https://github.com/metalnem/aes-gcm-siv/blob/master/LICENSE
@@ -18,13 +18,14 @@ Intel Core i7-5557U CPU 3.10GHz (Broadwell), 1 CPU, 4 logical and 2 physical cor
 ```
 |                Method | Size |     Mean |     Error |    StdDev | Scaled |
 |---------------------- |----- |---------:|----------:|----------:|-------:|
-|    **AES-GCM (native)** | **4096** | **1.742 us** | **0.0013 us** | **0.0012 us** |   **1.00** |
-| AES-GCM (libsodium) | 4096 | 3.010 us | 0.0032 us | 0.0029 us |   1.73 |
-|           AES-GCM-SIV | 4096 | 1.811 us | 0.0045 us | 0.0038 us |   1.04 |
+|    **AES-GCM (native)** | **4096** | **1.722 us** | **0.0023 us** | **0.0022 us** |   **1.00** |
+| AES-GCM (libsodium) | 4096 | 3.012 us | 0.0021 us | 0.0020 us |   1.75 |
+|           AES-GCM-SIV | 4096 | 1.795 us | 0.0011 us | 0.0010 us |   1.04 |
 |                       |      |          |           |           |        |
-|    **AES-GCM (native)** | **8192** | **2.994 us** | **0.0074 us** | **0.0066 us** |   **1.00** |
-| AES-GCM (libsodium) | 8192 | 5.799 us | 0.0072 us | 0.0068 us |   1.94 |
-|           AES-GCM-SIV | 8192 | 3.296 us | 0.0046 us | 0.0040 us |   1.10 |
+|    **AES-GCM (native)** | **8192** | **2.961 us** | **0.0017 us** | **0.0015 us** |   **1.00** |
+| AES-GCM (libsodium) | 8192 | 5.824 us | 0.0021 us | 0.0017 us |   1.97 |
+|           AES-GCM-SIV | 8192 | 3.262 us | 0.0014 us | 0.0012 us |   1.10 |
+
 
 ``` ini
 BenchmarkDotNet=v0.11.1, OS=Windows 10.0.17134.285 (1803/April2018Update/Redstone4)

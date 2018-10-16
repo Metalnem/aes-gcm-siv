@@ -18,17 +18,14 @@ namespace Cryptography
 		private readonly byte[] roundKeys;
 		private bool disposed;
 
-		// TODO: add Windows benchmarks
 		// TODO: pin KeySchedule parameters outside the method
 		// TODO: throw if platform not supported
-		// TODO: assign initial vector values in place
 		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
 		// TODO: mark as unsafe only methods, not the whole class
 		// TOOD: restrict the number of plaintext blocks
 		// TODO: add BoringSSL docs
 		// TODO: fix code duplication in two CalculateTag methods
 		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
-		// TODO: implement the correct key derivation method for encrypting large inputs
 		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
 		// TODO: test max plaintext size
 		// TODO: test both polyval and encrypt methods on all input sizes
@@ -182,14 +179,15 @@ namespace Cryptography
 
 		private static void KeySchedule(byte[] key, byte[] roundKeys)
 		{
-			Vector128<byte> xmm1, xmm2, xmm3, xmm4, xmm14, con1, con3, mask;
+			Vector128<byte> xmm1, xmm2, xmm3, xmm4, xmm14;
 
 			fixed (byte* keyPtr = key)
 			fixed (byte* roundKeysPtr = roundKeys)
 			{
-				mask = Sse.StaticCast<int, byte>(Sse2.SetVector128(0x0c0f0e0d, 0x0c0f0e0d, 0x0c0f0e0d, 0x0c0f0e0d));
-				con1 = Sse.StaticCast<int, byte>(Sse2.SetVector128(1, 1, 1, 1));
-				con3 = Sse.StaticCast<sbyte, byte>(Sse2.SetVector128(7, 6, 5, 4, 7, 6, 5, 4, -1, -1, -1, -1, -1, -1, -1, -1));
+				var mask = Sse.StaticCast<int, byte>(Sse2.SetVector128(0x0c0f0e0d, 0x0c0f0e0d, 0x0c0f0e0d, 0x0c0f0e0d));
+				var con1 = Sse.StaticCast<int, byte>(Sse2.SetVector128(1, 1, 1, 1));
+				var con3 = Sse.StaticCast<sbyte, byte>(Sse2.SetVector128(7, 6, 5, 4, 7, 6, 5, 4, -1, -1, -1, -1, -1, -1, -1, -1));
+
 				xmm4 = Sse2.SetZeroVector128<byte>();
 				xmm14 = Sse2.SetZeroVector128<byte>();
 				xmm1 = Sse2.LoadVector128(&keyPtr[0]);
@@ -232,20 +230,18 @@ namespace Cryptography
 
 		private static void DeriveKeys(byte* nonce, byte* ks, byte* hashKey, byte* encryptionKey)
 		{
-			Vector128<byte> xmm1, xmm3, b1, b2, b3, b4, b5, b6;
-			Vector128<int> one = Sse2.SetVector128(0, 0, 0, 1);
-
 			var n = (int*)nonce;
+			var one = Sse2.SetVector128(0, 0, 0, 1);
 
-			b1 = Sse.StaticCast<int, byte>(Sse2.SetVector128(n[2], n[1], n[0], 0));
-			b2 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b1), one));
-			b3 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b2), one));
-			b4 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b3), one));
-			b5 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b4), one));
-			b6 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b5), one));
+			var b1 = Sse.StaticCast<int, byte>(Sse2.SetVector128(n[2], n[1], n[0], 0));
+			var b2 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b1), one));
+			var b3 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b2), one));
+			var b4 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b3), one));
+			var b5 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b4), one));
+			var b6 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b5), one));
 
-			xmm1 = Sse2.LoadVector128(&ks[0]);
-			xmm3 = Sse2.LoadVector128(&ks[16]);
+			var xmm1 = Sse2.LoadVector128(&ks[0]);
+			var xmm3 = Sse2.LoadVector128(&ks[16]);
 
 			b1 = Sse2.Xor(b1, xmm1);
 			b2 = Sse2.Xor(b2, xmm1);
@@ -301,10 +297,11 @@ namespace Cryptography
 
 		private static void InitPowersTable(byte* powersTable, int size, byte* hashKey)
 		{
-			Vector128<ulong> tmp0, tmp1, tmp2, tmp3, tmp4, poly, t;
+			Vector128<ulong> tmp0, tmp1, tmp2, tmp3, tmp4;
 
-			poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
-			t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(hashKey));
+			var poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
+			var t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(hashKey));
+
 			tmp0 = t;
 			Sse2.Store(powersTable, Sse.StaticCast<ulong, byte>(t));
 
@@ -338,11 +335,11 @@ namespace Cryptography
 			}
 
 			int blocks = Math.DivRem(length, 16, out int remainder);
-			Vector128<ulong> tmp1, tmp2, tmp3, tmp4, poly, t, h;
+			Vector128<ulong> tmp1, tmp2, tmp3, tmp4;
 
-			poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
-			t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(polyval));
-			h = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(hashKey));
+			var poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
+			var t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(polyval));
+			var h = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(hashKey));
 
 			for (int i = 0; i < blocks; ++i)
 			{
@@ -697,11 +694,12 @@ namespace Cryptography
 
 		private static void EncryptTag(byte* pt, byte* ct, byte* key, byte* ks)
 		{
-			Vector128<byte> xmm1, xmm2, xmm3, xmm4, xmm14, b1, con1, con3, mask;
+			Vector128<byte> xmm1, xmm2, xmm3, xmm4, xmm14, b1;
 
-			mask = Sse.StaticCast<int, byte>(Sse2.SetVector128(0x0c0f0e0d, 0x0c0f0e0d, 0x0c0f0e0d, 0x0c0f0e0d));
-			con1 = Sse.StaticCast<int, byte>(Sse2.SetVector128(1, 1, 1, 1));
-			con3 = Sse.StaticCast<sbyte, byte>(Sse2.SetVector128(7, 6, 5, 4, 7, 6, 5, 4, -1, -1, -1, -1, -1, -1, -1, -1));
+			var mask = Sse.StaticCast<int, byte>(Sse2.SetVector128(0x0c0f0e0d, 0x0c0f0e0d, 0x0c0f0e0d, 0x0c0f0e0d));
+			var con1 = Sse.StaticCast<int, byte>(Sse2.SetVector128(1, 1, 1, 1));
+			var con3 = Sse.StaticCast<sbyte, byte>(Sse2.SetVector128(7, 6, 5, 4, 7, 6, 5, 4, -1, -1, -1, -1, -1, -1, -1, -1));
+
 			xmm4 = Sse2.SetZeroVector128<byte>();
 			xmm14 = Sse2.SetZeroVector128<byte>();
 			xmm1 = Sse2.LoadVector128(&key[0]);
