@@ -9,6 +9,8 @@ namespace Cryptography
 {
 	public unsafe sealed class AesGcmSiv : IDisposable
 	{
+		private static readonly byte[] Empty = new byte[0];
+
 		private const int KeySizeInBytes = 32;
 		private const int NonceSizeInBytes = 12;
 		private const int TagSizeInBytes = 16;
@@ -17,16 +19,15 @@ namespace Cryptography
 		private bool disposed;
 
 		// TODO: pin arrays instead of spans
+		// TODO: add libsodium and miscreant to benchmarks
+		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
+
 		// TODO: mark as unsafe only methods, not the whole class
 		// TOOD: restrict the number of plaintext blocks
 		// TODO: add BoringSSL docs
 		// TODO: fix code duplication in two CalculateTag methods
 		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
 		// TODO: implement the correct key derivation method for encrypting large inputs
-		// TODO: add benchmark results to README
-		// TODO: add libsodium and miscreant to benchmarks
-		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
-		// TODO: add Span<byte> overloads
 		// TODO: throw if platform not supported
 		// TODO: add IsSupported property
 		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
@@ -63,7 +64,21 @@ namespace Cryptography
 			ThrowIfNull(ciphertext, nameof(ciphertext));
 			ThrowIfNull(tag, nameof(tag));
 
-			Encrypt((ReadOnlySpan<byte>)nonce, plaintext, ciphertext, tag, associatedData);
+			CheckParameters(plaintext, ciphertext, nonce, tag);
+
+			if (associatedData is null)
+			{
+				associatedData = Empty;
+			}
+
+			fixed (byte* noncePtr = nonce)
+			fixed (byte* pt = plaintext)
+			fixed (byte* ct = ciphertext)
+			fixed (byte* tagPtr = tag)
+			fixed (byte* ad = associatedData)
+			{
+				Encrypt(noncePtr, pt, plaintext.Length, ct, tagPtr, ad, associatedData.Length);
+			}
 		}
 
 		public void Encrypt(
@@ -76,55 +91,35 @@ namespace Cryptography
 			ThrowIfDisposed();
 			CheckParameters(plaintext, ciphertext, nonce, tag);
 
-			int plaintextLength = plaintext.Length;
-			int associatedDataLength = associatedData.Length;
+			fixed (byte* noncePtr = nonce)
+			fixed (byte* pt = plaintext)
+			fixed (byte* ct = ciphertext)
+			fixed (byte* tagPtr = tag)
+			fixed (byte* ad = associatedData)
+			{
+				Encrypt(noncePtr, pt, plaintext.Length, ct, tagPtr, ad, associatedData.Length);
+			}
+		}
 
+		private void Encrypt(byte* nonce, byte* pt, int ptLen, byte* ct, byte* tag, byte* ad, int adLen)
+		{
 			byte* hashKey = stackalloc byte[16];
 			byte* encryptionKey = stackalloc byte[32];
 			byte* encryptionRoundKeys = stackalloc byte[15 * 16];
 
 			fixed (byte* roundKeysPtr = roundKeys)
-			fixed (byte* noncePtr = nonce)
-			fixed (byte* plaintextPtr = plaintext)
-			fixed (byte* ciphertextPtr = ciphertext)
-			fixed (byte* tagPtr = tag)
-			fixed (byte* associatedDataPtr = associatedData)
 			{
-				if (plaintextLength + associatedDataLength <= 128)
+				DeriveKeys(nonce, hashKey, encryptionKey, roundKeysPtr);
+
+				if (ptLen + adLen <= 128)
 				{
-					DeriveKeys(noncePtr, hashKey, encryptionKey, roundKeysPtr);
-
-					CalculateTagHorner(
-						noncePtr,
-						plaintextPtr,
-						plaintextLength,
-						associatedDataPtr,
-						associatedDataLength,
-						hashKey,
-						encryptionKey,
-						tagPtr,
-						encryptionRoundKeys
-					);
-
-					Encrypt4(plaintextPtr, ciphertextPtr, plaintextLength, tagPtr, encryptionRoundKeys);
+					CalculateTagHorner(nonce, pt, ptLen, ad, adLen, hashKey, encryptionKey, tag, encryptionRoundKeys);
+					Encrypt4(pt, ptLen, ct, tag, encryptionRoundKeys);
 				}
 				else
 				{
-					DeriveKeys(noncePtr, hashKey, encryptionKey, roundKeysPtr);
-
-					CalculateTagPowersTable(
-						noncePtr,
-						plaintextPtr,
-						plaintextLength,
-						associatedDataPtr,
-						associatedDataLength,
-						hashKey,
-						encryptionKey,
-						tagPtr,
-						encryptionRoundKeys
-					);
-
-					Encrypt8(plaintextPtr, ciphertextPtr, plaintextLength, tagPtr, encryptionRoundKeys);
+					CalculateTagPowersTable(nonce, pt, ptLen, ad, adLen, hashKey, encryptionKey, tag, encryptionRoundKeys);
+					Encrypt8(pt, ptLen, ct, tag, encryptionRoundKeys);
 				}
 			}
 		}
@@ -694,7 +689,7 @@ namespace Cryptography
 			Sse2.Store(polyval, Sse.StaticCast<ulong, byte>(t));
 		}
 
-		public static void EncryptTag(byte* plaintext, byte* ciphertext, byte* key, byte* roundKeys)
+		public static void EncryptTag(byte* pt, byte* ct, byte* key, byte* ks)
 		{
 			Vector128<byte> xmm1, xmm2, xmm3, xmm4, xmm14, b1, con1, con3, mask;
 
@@ -705,11 +700,11 @@ namespace Cryptography
 			xmm14 = Sse2.SetZeroVector128<byte>();
 			xmm1 = Sse2.LoadVector128(&key[0]);
 			xmm3 = Sse2.LoadVector128(&key[16]);
-			Sse2.Store(&roundKeys[0], xmm1);
-			b1 = Sse2.LoadVector128(&plaintext[0]);
+			Sse2.Store(&ks[0], xmm1);
+			b1 = Sse2.LoadVector128(&pt[0]);
 			b1 = Sse2.Xor(b1, xmm1);
 			b1 = Aes.Encrypt(b1, xmm3);
-			Sse2.Store(&roundKeys[16], xmm3);
+			Sse2.Store(&ks[16], xmm3);
 
 			for (int i = 0; i < 6; ++i)
 			{
@@ -721,7 +716,7 @@ namespace Cryptography
 				xmm4 = Ssse3.Shuffle(xmm1, con3);
 				xmm1 = Sse2.Xor(xmm1, xmm4);
 				xmm1 = Sse2.Xor(xmm1, xmm2);
-				Sse2.Store(&roundKeys[(i + 1) * 2 * 16], xmm1);
+				Sse2.Store(&ks[(i + 1) * 2 * 16], xmm1);
 				b1 = Aes.Encrypt(b1, xmm1);
 
 				xmm2 = Sse.StaticCast<uint, byte>(Sse2.Shuffle(Sse.StaticCast<byte, uint>(xmm1), 0xff));
@@ -731,7 +726,7 @@ namespace Cryptography
 				xmm4 = Ssse3.Shuffle(xmm3, con3);
 				xmm3 = Sse2.Xor(xmm4, xmm3);
 				xmm3 = Sse2.Xor(xmm2, xmm3);
-				Sse2.Store(&roundKeys[((i + 1) * 2 + 1) * 16], xmm3);
+				Sse2.Store(&ks[((i + 1) * 2 + 1) * 16], xmm3);
 				b1 = Aes.Encrypt(b1, xmm3);
 			}
 
@@ -742,32 +737,32 @@ namespace Cryptography
 			xmm4 = Ssse3.Shuffle(xmm1, con3);
 			xmm1 = Sse2.Xor(xmm1, xmm4);
 			xmm1 = Sse2.Xor(xmm1, xmm2);
-			Sse2.Store(&roundKeys[14 * 16], xmm1);
+			Sse2.Store(&ks[14 * 16], xmm1);
 
 			b1 = Aes.EncryptLast(b1, xmm1);
-			Sse2.Store(ciphertext, b1);
+			Sse2.Store(ct, b1);
 		}
 
 		public static void CalculateTagHorner(
 			byte* nonce,
-			byte* plaintext,
-			int plaintextLength,
-			byte* associatedData,
-			int associatedDataLength,
+			byte* pt,
+			int ptLen,
+			byte* ad,
+			int adLen,
 			byte* hashKey,
 			byte* encryptionKey,
 			byte* tag,
-			byte* roundKeys)
+			byte* ks)
 		{
 			byte* lengthBlock = stackalloc byte[16];
 
-			((long*)lengthBlock)[0] = associatedDataLength * 8;
-			((long*)lengthBlock)[1] = plaintextLength * 8;
+			((long*)lengthBlock)[0] = adLen * 8;
+			((long*)lengthBlock)[1] = ptLen * 8;
 
 			byte* polyval = stackalloc byte[16];
 
-			PolyvalHorner(polyval, hashKey, associatedData, associatedDataLength);
-			PolyvalHorner(polyval, hashKey, plaintext, plaintextLength);
+			PolyvalHorner(polyval, hashKey, ad, adLen);
+			PolyvalHorner(polyval, hashKey, pt, ptLen);
 			PolyvalHorner(polyval, hashKey, lengthBlock, 16);
 
 			var n = (int*)nonce;
@@ -778,32 +773,32 @@ namespace Cryptography
 			t = Sse2.And(t, Sse.StaticCast<ulong, byte>(andMask));
 
 			Sse2.Store(polyval, t);
-			EncryptTag(polyval, tag, encryptionKey, roundKeys);
+			EncryptTag(polyval, tag, encryptionKey, ks);
 		}
 
 		public static void CalculateTagPowersTable(
 			byte* nonce,
-			byte* plaintext,
-			int plaintextLength,
-			byte* associatedData,
-			int associatedDataLength,
+			byte* pt,
+			int ptLen,
+			byte* ad,
+			int adLen,
 			byte* hashKey,
 			byte* encryptionKey,
 			byte* tag,
-			byte* roundKeys)
+			byte* ks)
 		{
 			byte* powersTable = stackalloc byte[8 * 16];
 			InitPowersTable(powersTable, 8, hashKey);
 
 			byte* lengthBlock = stackalloc byte[16];
 
-			((long*)lengthBlock)[0] = associatedDataLength * 8;
-			((long*)lengthBlock)[1] = plaintextLength * 8;
+			((long*)lengthBlock)[0] = adLen * 8;
+			((long*)lengthBlock)[1] = ptLen * 8;
 
 			byte* polyval = stackalloc byte[16];
 
-			PolyvalPowersTable(polyval, powersTable, associatedData, associatedDataLength);
-			PolyvalPowersTable(polyval, powersTable, plaintext, plaintextLength);
+			PolyvalPowersTable(polyval, powersTable, ad, adLen);
+			PolyvalPowersTable(polyval, powersTable, pt, ptLen);
 			PolyvalPowersTable(polyval, powersTable, lengthBlock, 16);
 
 			var n = (int*)nonce;
@@ -814,18 +809,18 @@ namespace Cryptography
 			t = Sse2.And(t, Sse.StaticCast<ulong, byte>(andMask));
 
 			Sse2.Store(polyval, t);
-			EncryptTag(polyval, tag, encryptionKey, roundKeys);
+			EncryptTag(polyval, tag, encryptionKey, ks);
 		}
 
-		public static void Encrypt4(byte* plaintext, byte* ciphertext, int length, byte* tag, byte* roundKeys)
+		public static void Encrypt4(byte* pt, int ptLen, byte* ct, byte* tag, byte* ks)
 		{
-			if (length == 0)
+			if (ptLen == 0)
 			{
 				return;
 			}
 
-			int blocks = Math.DivRem(length, 16, out int remainder16);
-			int remainder16Pos = length - remainder16;
+			int blocks = Math.DivRem(ptLen, 16, out int remainder16);
+			int remainder16Pos = ptLen - remainder16;
 			int remainder4 = blocks % 4;
 			int remainder4Pos = blocks - remainder4;
 
@@ -844,7 +839,7 @@ namespace Cryptography
 				var tmp3 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(tmp2), one));
 				ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(tmp2), two));
 
-				key = Sse2.LoadVector128(roundKeys);
+				key = Sse2.LoadVector128(ks);
 				tmp0 = Sse2.Xor(tmp0, key);
 				tmp1 = Sse2.Xor(tmp1, key);
 				tmp2 = Sse2.Xor(tmp2, key);
@@ -852,83 +847,83 @@ namespace Cryptography
 
 				for (int j = 1; j < 14; ++j)
 				{
-					key = Sse2.LoadVector128(&roundKeys[j * 16]);
+					key = Sse2.LoadVector128(&ks[j * 16]);
 					tmp0 = Aes.Encrypt(tmp0, key);
 					tmp1 = Aes.Encrypt(tmp1, key);
 					tmp2 = Aes.Encrypt(tmp2, key);
 					tmp3 = Aes.Encrypt(tmp3, key);
 				}
 
-				key = Sse2.LoadVector128(&roundKeys[14 * 16]);
+				key = Sse2.LoadVector128(&ks[14 * 16]);
 				tmp0 = Aes.EncryptLast(tmp0, key);
 				tmp1 = Aes.EncryptLast(tmp1, key);
 				tmp2 = Aes.EncryptLast(tmp2, key);
 				tmp3 = Aes.EncryptLast(tmp3, key);
 
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(&plaintext[(i + 0) * 16]));
-				tmp1 = Sse2.Xor(tmp1, Sse2.LoadVector128(&plaintext[(i + 1) * 16]));
-				tmp2 = Sse2.Xor(tmp2, Sse2.LoadVector128(&plaintext[(i + 2) * 16]));
-				tmp3 = Sse2.Xor(tmp3, Sse2.LoadVector128(&plaintext[(i + 3) * 16]));
+				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(&pt[(i + 0) * 16]));
+				tmp1 = Sse2.Xor(tmp1, Sse2.LoadVector128(&pt[(i + 1) * 16]));
+				tmp2 = Sse2.Xor(tmp2, Sse2.LoadVector128(&pt[(i + 2) * 16]));
+				tmp3 = Sse2.Xor(tmp3, Sse2.LoadVector128(&pt[(i + 3) * 16]));
 
-				Sse2.Store(&ciphertext[(i + 0) * 16], tmp0);
-				Sse2.Store(&ciphertext[(i + 1) * 16], tmp1);
-				Sse2.Store(&ciphertext[(i + 2) * 16], tmp2);
-				Sse2.Store(&ciphertext[(i + 3) * 16], tmp3);
+				Sse2.Store(&ct[(i + 0) * 16], tmp0);
+				Sse2.Store(&ct[(i + 1) * 16], tmp1);
+				Sse2.Store(&ct[(i + 2) * 16], tmp2);
+				Sse2.Store(&ct[(i + 3) * 16], tmp3);
 			}
 
 			for (int i = 0; i < remainder4; ++i)
 			{
 				var tmp0 = ctr;
 				ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(roundKeys));
+				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(ks));
 
 				for (int j = 1; j < 14; ++j)
 				{
-					tmp0 = Aes.Encrypt(tmp0, Sse2.LoadVector128(&roundKeys[j * 16]));
+					tmp0 = Aes.Encrypt(tmp0, Sse2.LoadVector128(&ks[j * 16]));
 				}
 
-				tmp0 = Aes.EncryptLast(tmp0, Sse2.LoadVector128(&roundKeys[14 * 16]));
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(&plaintext[(remainder4Pos + i) * 16]));
-				Sse2.Store(&ciphertext[(remainder4Pos + i) * 16], tmp0);
+				tmp0 = Aes.EncryptLast(tmp0, Sse2.LoadVector128(&ks[14 * 16]));
+				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(&pt[(remainder4Pos + i) * 16]));
+				Sse2.Store(&ct[(remainder4Pos + i) * 16], tmp0);
 			}
 
 			if (remainder16 != 0)
 			{
 				byte* b = stackalloc byte[16];
 
-				var source = new Span<byte>(plaintext + remainder16Pos, remainder16);
+				var source = new Span<byte>(pt + remainder16Pos, remainder16);
 				var destination = new Span<byte>(b, 16);
 
 				source.CopyTo(destination);
 
 				var tmp0 = ctr;
 				ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(roundKeys));
+				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(ks));
 
 				for (int j = 1; j < 14; ++j)
 				{
-					tmp0 = Aes.Encrypt(tmp0, Sse2.LoadVector128(&roundKeys[j * 16]));
+					tmp0 = Aes.Encrypt(tmp0, Sse2.LoadVector128(&ks[j * 16]));
 				}
 
-				tmp0 = Aes.EncryptLast(tmp0, Sse2.LoadVector128(&roundKeys[14 * 16]));
+				tmp0 = Aes.EncryptLast(tmp0, Sse2.LoadVector128(&ks[14 * 16]));
 				Sse2.Store(b, Sse2.Xor(tmp0, Sse2.LoadVector128(b)));
 
 				source = new Span<byte>(b, remainder16);
-				destination = new Span<byte>(ciphertext + remainder16Pos, remainder16);
+				destination = new Span<byte>(ct + remainder16Pos, remainder16);
 
 				source.CopyTo(destination);
 			}
 		}
 
-		public static void Encrypt8(byte* plaintext, byte* ciphertext, int length, byte* tag, byte* roundKeys)
+		public static void Encrypt8(byte* pt, int ptLen, byte* ct, byte* tag, byte* ks)
 		{
-			if (length == 0)
+			if (ptLen == 0)
 			{
 				return;
 			}
 
-			int blocks = Math.DivRem(length, 16, out int remainder16);
-			int remainder16Pos = length - remainder16;
+			int blocks = Math.DivRem(ptLen, 16, out int remainder16);
+			int remainder16Pos = ptLen - remainder16;
 			int remainder8 = blocks % 8;
 			int remainder8Pos = blocks - remainder8;
 
@@ -951,7 +946,7 @@ namespace Cryptography
 				var tmp7 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(tmp6), one));
 				ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(tmp6), two));
 
-				key = Sse2.LoadVector128(roundKeys);
+				key = Sse2.LoadVector128(ks);
 				tmp0 = Sse2.Xor(tmp0, key);
 				tmp1 = Sse2.Xor(tmp1, key);
 				tmp2 = Sse2.Xor(tmp2, key);
@@ -963,7 +958,7 @@ namespace Cryptography
 
 				for (int j = 1; j < 14; ++j)
 				{
-					key = Sse2.LoadVector128(&roundKeys[j * 16]);
+					key = Sse2.LoadVector128(&ks[j * 16]);
 					tmp0 = Aes.Encrypt(tmp0, key);
 					tmp1 = Aes.Encrypt(tmp1, key);
 					tmp2 = Aes.Encrypt(tmp2, key);
@@ -974,7 +969,7 @@ namespace Cryptography
 					tmp7 = Aes.Encrypt(tmp7, key);
 				}
 
-				key = Sse2.LoadVector128(&roundKeys[14 * 16]);
+				key = Sse2.LoadVector128(&ks[14 * 16]);
 				tmp0 = Aes.EncryptLast(tmp0, key);
 				tmp1 = Aes.EncryptLast(tmp1, key);
 				tmp2 = Aes.EncryptLast(tmp2, key);
@@ -984,64 +979,64 @@ namespace Cryptography
 				tmp6 = Aes.EncryptLast(tmp6, key);
 				tmp7 = Aes.EncryptLast(tmp7, key);
 
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(&plaintext[(i + 0) * 16]));
-				tmp1 = Sse2.Xor(tmp1, Sse2.LoadVector128(&plaintext[(i + 1) * 16]));
-				tmp2 = Sse2.Xor(tmp2, Sse2.LoadVector128(&plaintext[(i + 2) * 16]));
-				tmp3 = Sse2.Xor(tmp3, Sse2.LoadVector128(&plaintext[(i + 3) * 16]));
-				tmp4 = Sse2.Xor(tmp4, Sse2.LoadVector128(&plaintext[(i + 4) * 16]));
-				tmp5 = Sse2.Xor(tmp5, Sse2.LoadVector128(&plaintext[(i + 5) * 16]));
-				tmp6 = Sse2.Xor(tmp6, Sse2.LoadVector128(&plaintext[(i + 6) * 16]));
-				tmp7 = Sse2.Xor(tmp7, Sse2.LoadVector128(&plaintext[(i + 7) * 16]));
+				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(&pt[(i + 0) * 16]));
+				tmp1 = Sse2.Xor(tmp1, Sse2.LoadVector128(&pt[(i + 1) * 16]));
+				tmp2 = Sse2.Xor(tmp2, Sse2.LoadVector128(&pt[(i + 2) * 16]));
+				tmp3 = Sse2.Xor(tmp3, Sse2.LoadVector128(&pt[(i + 3) * 16]));
+				tmp4 = Sse2.Xor(tmp4, Sse2.LoadVector128(&pt[(i + 4) * 16]));
+				tmp5 = Sse2.Xor(tmp5, Sse2.LoadVector128(&pt[(i + 5) * 16]));
+				tmp6 = Sse2.Xor(tmp6, Sse2.LoadVector128(&pt[(i + 6) * 16]));
+				tmp7 = Sse2.Xor(tmp7, Sse2.LoadVector128(&pt[(i + 7) * 16]));
 
-				Sse2.Store(&ciphertext[(i + 0) * 16], tmp0);
-				Sse2.Store(&ciphertext[(i + 1) * 16], tmp1);
-				Sse2.Store(&ciphertext[(i + 2) * 16], tmp2);
-				Sse2.Store(&ciphertext[(i + 3) * 16], tmp3);
-				Sse2.Store(&ciphertext[(i + 4) * 16], tmp4);
-				Sse2.Store(&ciphertext[(i + 5) * 16], tmp5);
-				Sse2.Store(&ciphertext[(i + 6) * 16], tmp6);
-				Sse2.Store(&ciphertext[(i + 7) * 16], tmp7);
+				Sse2.Store(&ct[(i + 0) * 16], tmp0);
+				Sse2.Store(&ct[(i + 1) * 16], tmp1);
+				Sse2.Store(&ct[(i + 2) * 16], tmp2);
+				Sse2.Store(&ct[(i + 3) * 16], tmp3);
+				Sse2.Store(&ct[(i + 4) * 16], tmp4);
+				Sse2.Store(&ct[(i + 5) * 16], tmp5);
+				Sse2.Store(&ct[(i + 6) * 16], tmp6);
+				Sse2.Store(&ct[(i + 7) * 16], tmp7);
 			}
 
 			for (int i = 0; i < remainder8; ++i)
 			{
 				var tmp0 = ctr;
 				ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(roundKeys));
+				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(ks));
 
 				for (int j = 1; j < 14; ++j)
 				{
-					tmp0 = Aes.Encrypt(tmp0, Sse2.LoadVector128(&roundKeys[j * 16]));
+					tmp0 = Aes.Encrypt(tmp0, Sse2.LoadVector128(&ks[j * 16]));
 				}
 
-				tmp0 = Aes.EncryptLast(tmp0, Sse2.LoadVector128(&roundKeys[14 * 16]));
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(&plaintext[(remainder8Pos + i) * 16]));
-				Sse2.Store(&ciphertext[(remainder8Pos + i) * 16], tmp0);
+				tmp0 = Aes.EncryptLast(tmp0, Sse2.LoadVector128(&ks[14 * 16]));
+				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(&pt[(remainder8Pos + i) * 16]));
+				Sse2.Store(&ct[(remainder8Pos + i) * 16], tmp0);
 			}
 
 			if (remainder16 != 0)
 			{
 				byte* b = stackalloc byte[16];
 
-				var source = new Span<byte>(plaintext + remainder16Pos, remainder16);
+				var source = new Span<byte>(pt + remainder16Pos, remainder16);
 				var destination = new Span<byte>(b, 16);
 
 				source.CopyTo(destination);
 
 				var tmp0 = ctr;
 				ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(roundKeys));
+				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(ks));
 
 				for (int j = 1; j < 14; ++j)
 				{
-					tmp0 = Aes.Encrypt(tmp0, Sse2.LoadVector128(&roundKeys[j * 16]));
+					tmp0 = Aes.Encrypt(tmp0, Sse2.LoadVector128(&ks[j * 16]));
 				}
 
-				tmp0 = Aes.EncryptLast(tmp0, Sse2.LoadVector128(&roundKeys[14 * 16]));
+				tmp0 = Aes.EncryptLast(tmp0, Sse2.LoadVector128(&ks[14 * 16]));
 				Sse2.Store(b, Sse2.Xor(tmp0, Sse2.LoadVector128(b)));
 
 				source = new Span<byte>(b, remainder16);
-				destination = new Span<byte>(ciphertext + remainder16Pos, remainder16);
+				destination = new Span<byte>(ct + remainder16Pos, remainder16);
 
 				source.CopyTo(destination);
 			}

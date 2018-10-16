@@ -32,13 +32,12 @@ namespace Cryptography.Tests
 				{
 					var tag = new byte[16];
 					var ciphertext = new byte[vector.Plaintext.Length];
+
 					siv.Encrypt(vector.Nonce, vector.Plaintext, ciphertext, tag, vector.Aad);
+					Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(Concat(ciphertext, tag)));
 
-					var result = new byte[vector.Plaintext.Length + tag.Length];
-					ciphertext.CopyTo(result, 0);
-					tag.AsSpan().CopyTo(result.AsSpan(result.Length - tag.Length));
-
-					Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(result));
+					siv.Encrypt((ReadOnlySpan<byte>)vector.Nonce, vector.Plaintext, ciphertext, tag, vector.Aad);
+					Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(Concat(ciphertext, tag)));
 				}
 			}
 		}
@@ -77,6 +76,16 @@ namespace Cryptography.Tests
 		private static byte[] GetBytes(JToken token, string property)
 		{
 			return Hex.Decode(GetString(token, property));
+		}
+
+		private static byte[] Concat(byte[] x, byte[] y)
+		{
+			var result = new byte[x.Length + y.Length];
+
+			x.CopyTo(result, 0);
+			y.CopyTo(result, x.Length);
+
+			return result;
 		}
 	}
 }
