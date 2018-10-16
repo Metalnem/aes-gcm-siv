@@ -49,13 +49,7 @@ namespace Cryptography
 			}
 		}
 
-		public static bool IsSupported
-		{
-			get
-			{
-				return Aes.IsSupported && Pclmulqdq.IsSupported;
-			}
-		}
+		public static bool IsSupported => Aes.IsSupported && Pclmulqdq.IsSupported;
 
 		public void Encrypt(
 			byte[] nonce,
@@ -118,7 +112,7 @@ namespace Cryptography
 
 			int* n = (int*)nonce;
 			byte* polyval = stackalloc byte[16];
-			long* lengthBlock = stackalloc long[2] { adLen * 8, ptLen * 8 };
+			long* lengthBlock = stackalloc long[2] { (long)adLen * 8, (long)ptLen * 8 };
 
 			var xorMask = Sse.StaticCast<int, byte>(Sse2.SetVector128(0, n[2], n[1], n[0]));
 			var andMask = Sse.StaticCast<ulong, byte>(Sse2.SetVector128(0x7fffffffffffffff, 0xffffffffffffffff));

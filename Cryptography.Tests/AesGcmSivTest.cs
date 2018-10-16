@@ -42,6 +42,21 @@ namespace Cryptography.Tests
 			}
 		}
 
+		[Fact]
+		public void TestMaxInputLength()
+		{
+			var key = new byte[32];
+			var nonce = new byte[12];
+			var plaintext = new byte[0x7fffffc7];
+			var tag = new byte[16];
+
+			using (var siv = new AesGcmSiv(key))
+			{
+				siv.Encrypt(nonce, plaintext, plaintext, tag);
+				Assert.Equal("b8f9d292c80c757ce0639ee04dba3ebd", Hex.Encode(tag));
+			}
+		}
+
 		private static IEnumerable<Vector> LoadVectors(string file)
 		{
 			var s = File.ReadAllText(file);
