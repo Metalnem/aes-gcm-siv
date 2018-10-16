@@ -21,16 +21,13 @@ namespace Cryptography
 		// TODO: pin KeySchedule parameters outside the method
 		// TODO: throw if platform not supported
 		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
-		// TODO: mark as unsafe only methods, not the whole class
 		// TOOD: restrict the number of plaintext blocks
 		// TODO: add BoringSSL docs
-		// TODO: fix code duplication in two CalculateTag methods
 		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
 		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
 		// TODO: test max plaintext size
 		// TODO: test both polyval and encrypt methods on all input sizes
 		// TODO: try to pipeline CLMUL instructions and to load powers as needed
-		// TODO: move unsafe implementations to separate file
 
 		public AesGcmSiv(byte[] key)
 		{
@@ -75,12 +72,13 @@ namespace Cryptography
 			}
 
 			fixed (byte* noncePtr = nonce)
+			fixed (byte* ks = roundKeys)
 			fixed (byte* pt = plaintext)
 			fixed (byte* ct = ciphertext)
 			fixed (byte* tagPtr = tag)
 			fixed (byte* ad = associatedData)
 			{
-				Encrypt(noncePtr, pt, plaintext.Length, ct, tagPtr, ad, associatedData.Length);
+				Encrypt(noncePtr, ks, pt, plaintext.Length, ct, tagPtr, ad, associatedData.Length);
 			}
 		}
 
@@ -95,35 +93,57 @@ namespace Cryptography
 			CheckParameters(plaintext, ciphertext, nonce, tag);
 
 			fixed (byte* noncePtr = nonce)
+			fixed (byte* ks = roundKeys)
 			fixed (byte* pt = plaintext)
 			fixed (byte* ct = ciphertext)
 			fixed (byte* tagPtr = tag)
 			fixed (byte* ad = associatedData)
 			{
-				Encrypt(noncePtr, pt, plaintext.Length, ct, tagPtr, ad, associatedData.Length);
+				Encrypt(noncePtr, ks, pt, plaintext.Length, ct, tagPtr, ad, associatedData.Length);
 			}
 		}
 
-		private void Encrypt(byte* nonce, byte* pt, int ptLen, byte* ct, byte* tag, byte* ad, int adLen)
+		private void Encrypt(byte* nonce, byte* ks, byte* pt, int ptLen, byte* ct, byte* tag, byte* ad, int adLen)
 		{
 			byte* hashKey = stackalloc byte[16];
 			byte* encryptionKey = stackalloc byte[32];
 			byte* encryptionRoundKeys = stackalloc byte[15 * 16];
 
-			fixed (byte* ks = roundKeys)
-			{
-				DeriveKeys(nonce, ks, hashKey, encryptionKey);
+			int* n = (int*)nonce;
+			byte* polyval = stackalloc byte[16];
+			long* lengthBlock = stackalloc long[2] { adLen * 8, ptLen * 8 };
 
-				if (ptLen + adLen <= 128)
-				{
-					CalculateTagHorner(nonce, pt, ptLen, ad, adLen, hashKey, encryptionKey, tag, encryptionRoundKeys);
-					Encrypt4(pt, ptLen, ct, tag, encryptionRoundKeys);
-				}
-				else
-				{
-					CalculateTagPowersTable(nonce, pt, ptLen, ad, adLen, hashKey, encryptionKey, tag, encryptionRoundKeys);
-					Encrypt8(pt, ptLen, ct, tag, encryptionRoundKeys);
-				}
+			var xorMask = Sse.StaticCast<int, byte>(Sse2.SetVector128(0, n[2], n[1], n[0]));
+			var andMask = Sse.StaticCast<ulong, byte>(Sse2.SetVector128(0x7fffffffffffffff, 0xffffffffffffffff));
+
+			DeriveKeys(nonce, ks, hashKey, encryptionKey);
+
+			if (ptLen + adLen <= 128)
+			{
+				PolyvalHorner(polyval, hashKey, ad, adLen);
+				PolyvalHorner(polyval, hashKey, pt, ptLen);
+				PolyvalHorner(polyval, hashKey, (byte*)lengthBlock, 16);
+
+				var t = Sse2.LoadVector128(polyval);
+				Sse2.Store(polyval, Sse2.And(Sse2.Xor(t, xorMask), andMask));
+
+				EncryptTag(polyval, tag, encryptionKey, encryptionRoundKeys);
+				Encrypt4(pt, ptLen, ct, tag, encryptionRoundKeys);
+			}
+			else
+			{
+				byte* powersTable = stackalloc byte[8 * 16];
+				InitPowersTable(powersTable, 8, hashKey);
+
+				PolyvalPowersTable(polyval, powersTable, ad, adLen);
+				PolyvalPowersTable(polyval, powersTable, pt, ptLen);
+				PolyvalPowersTable(polyval, powersTable, (byte*)lengthBlock, 16);
+
+				var t = Sse2.LoadVector128(polyval);
+				Sse2.Store(polyval, Sse2.And(Sse2.Xor(t, xorMask), andMask));
+
+				EncryptTag(polyval, tag, encryptionKey, encryptionRoundKeys);
+				Encrypt8(pt, ptLen, ct, tag, encryptionRoundKeys);
 			}
 		}
 
@@ -745,75 +765,6 @@ namespace Cryptography
 
 			b1 = Aes.EncryptLast(b1, xmm1);
 			Sse2.Store(ct, b1);
-		}
-
-		private static void CalculateTagHorner(
-			byte* nonce,
-			byte* pt,
-			int ptLen,
-			byte* ad,
-			int adLen,
-			byte* hashKey,
-			byte* encryptionKey,
-			byte* tag,
-			byte* ks)
-		{
-			byte* lengthBlock = stackalloc byte[16];
-
-			((long*)lengthBlock)[0] = adLen * 8;
-			((long*)lengthBlock)[1] = ptLen * 8;
-
-			byte* polyval = stackalloc byte[16];
-
-			PolyvalHorner(polyval, hashKey, ad, adLen);
-			PolyvalHorner(polyval, hashKey, pt, ptLen);
-			PolyvalHorner(polyval, hashKey, lengthBlock, 16);
-
-			var n = (int*)nonce;
-			var t = Sse2.LoadVector128(polyval);
-			t = Sse2.Xor(t, Sse.StaticCast<int, byte>(Sse2.SetVector128(0, n[2], n[1], n[0])));
-
-			var andMask = Sse2.SetVector128(0x7fffffffffffffff, 0xffffffffffffffff);
-			t = Sse2.And(t, Sse.StaticCast<ulong, byte>(andMask));
-
-			Sse2.Store(polyval, t);
-			EncryptTag(polyval, tag, encryptionKey, ks);
-		}
-
-		private static void CalculateTagPowersTable(
-			byte* nonce,
-			byte* pt,
-			int ptLen,
-			byte* ad,
-			int adLen,
-			byte* hashKey,
-			byte* encryptionKey,
-			byte* tag,
-			byte* ks)
-		{
-			byte* powersTable = stackalloc byte[8 * 16];
-			InitPowersTable(powersTable, 8, hashKey);
-
-			byte* lengthBlock = stackalloc byte[16];
-
-			((long*)lengthBlock)[0] = adLen * 8;
-			((long*)lengthBlock)[1] = ptLen * 8;
-
-			byte* polyval = stackalloc byte[16];
-
-			PolyvalPowersTable(polyval, powersTable, ad, adLen);
-			PolyvalPowersTable(polyval, powersTable, pt, ptLen);
-			PolyvalPowersTable(polyval, powersTable, lengthBlock, 16);
-
-			var n = (int*)nonce;
-			var t = Sse2.LoadVector128(polyval);
-			t = Sse2.Xor(t, Sse.StaticCast<int, byte>(Sse2.SetVector128(0, n[2], n[1], n[0])));
-
-			var andMask = Sse2.SetVector128(0x7fffffffffffffff, 0xffffffffffffffff);
-			t = Sse2.And(t, Sse.StaticCast<ulong, byte>(andMask));
-
-			Sse2.Store(polyval, t);
-			EncryptTag(polyval, tag, encryptionKey, ks);
 		}
 
 		private static void Encrypt4(byte* pt, int ptLen, byte* ct, byte* tag, byte* ks)
