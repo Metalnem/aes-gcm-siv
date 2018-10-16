@@ -18,6 +18,7 @@ namespace Cryptography
 		private readonly byte[] roundKeys;
 		private bool disposed;
 
+		// TODO: test on inputs larger than 0x7fffffc7 bytes using unmanaged arrays
 		// TODO: update project file and README
 		// TODO: test both polyval and encrypt methods on all input sizes
 		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
