@@ -18,10 +18,10 @@ Intel Core i7-5557U CPU 3.10GHz (Broadwell), 1 CPU, 4 logical and 2 physical cor
 ```
 |                Method | Size |     Mean |     Error |    StdDev | Scaled |
 |---------------------- |----- |---------:|----------:|----------:|-------:|
-|    **&#39;AES-GCM (native)&#39;** | **4096** | **1.742 us** | **0.0013 us** | **0.0012 us** |   **1.00** |
-| &#39;AES-GCM (libsodium)&#39; | 4096 | 3.010 us | 0.0032 us | 0.0029 us |   1.73 |
+|    AES-GCM (native) | **4096** | **1.742 us** | **0.0013 us** | **0.0012 us** |   **1.00** |
+| AES-GCM (libsodium) | 4096 | 3.010 us | 0.0032 us | 0.0029 us |   1.73 |
 |           AES-GCM-SIV | 4096 | 1.811 us | 0.0045 us | 0.0038 us |   1.04 |
 |                       |      |          |           |           |        |
-|    **&#39;AES-GCM (native)&#39;** | **8192** | **2.994 us** | **0.0074 us** | **0.0066 us** |   **1.00** |
-| &#39;AES-GCM (libsodium)&#39; | 8192 | 5.799 us | 0.0072 us | 0.0068 us |   1.94 |
+|    AES-GCM (native) | **8192** | **2.994 us** | **0.0074 us** | **0.0066 us** |   **1.00** |
+| AES-GCM (libsodium) | 8192 | 5.799 us | 0.0072 us | 0.0068 us |   1.94 |
 |           AES-GCM-SIV | 8192 | 3.296 us | 0.0046 us | 0.0040 us |   1.10 |
