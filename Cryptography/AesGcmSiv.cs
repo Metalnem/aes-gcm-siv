@@ -18,18 +18,15 @@ namespace Cryptography
 		private readonly byte[] roundKeys;
 		private bool disposed;
 
-		// TODO: pin arrays instead of spans
-		// TODO: add libsodium and miscreant to benchmarks
+		// TODO: throw if platform not supported
+		// TODO: assign initial vector values in place
 		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
-
 		// TODO: mark as unsafe only methods, not the whole class
 		// TOOD: restrict the number of plaintext blocks
 		// TODO: add BoringSSL docs
 		// TODO: fix code duplication in two CalculateTag methods
 		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
 		// TODO: implement the correct key derivation method for encrypting large inputs
-		// TODO: throw if platform not supported
-		// TODO: add IsSupported property
 		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
 		// TODO: make all private methods private
 		// TODO: test max plaintext size
@@ -48,6 +45,14 @@ namespace Cryptography
 
 			roundKeys = new byte[15 * 16];
 			KeySchedule(key, roundKeys);
+		}
+
+		public bool IsSupported
+		{
+			get
+			{
+				return Aes.IsSupported && Pclmulqdq.IsSupported;
+			}
 		}
 
 		public void Encrypt(
@@ -107,9 +112,9 @@ namespace Cryptography
 			byte* encryptionKey = stackalloc byte[32];
 			byte* encryptionRoundKeys = stackalloc byte[15 * 16];
 
-			fixed (byte* roundKeysPtr = roundKeys)
+			fixed (byte* ks = roundKeys)
 			{
-				DeriveKeys(nonce, hashKey, encryptionKey, roundKeysPtr);
+				DeriveKeys(nonce, ks, hashKey, encryptionKey);
 
 				if (ptLen + adLen <= 128)
 				{
@@ -138,7 +143,7 @@ namespace Cryptography
 			ThrowIfNull(ciphertext, nameof(ciphertext));
 			ThrowIfNull(tag, nameof(tag));
 
-			Decrypt((ReadOnlySpan<byte>)nonce, ciphertext, tag, plaintext, associatedData);
+			CheckParameters(plaintext, ciphertext, nonce, tag);
 		}
 
 		public void Decrypt(
@@ -224,7 +229,7 @@ namespace Cryptography
 			}
 		}
 
-		public static void DeriveKeys(byte* nonce, byte* hashKey, byte* encryptionKey, byte* roundKeys)
+		public static void DeriveKeys(byte* nonce, byte* ks, byte* hashKey, byte* encryptionKey)
 		{
 			Vector128<byte> xmm1, xmm3, b1, b2, b3, b4, b5, b6;
 			Vector128<int> one = Sse2.SetVector128(0, 0, 0, 1);
@@ -238,8 +243,8 @@ namespace Cryptography
 			b5 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b4), one));
 			b6 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(b5), one));
 
-			xmm1 = Sse2.LoadVector128(&roundKeys[0]);
-			xmm3 = Sse2.LoadVector128(&roundKeys[16]);
+			xmm1 = Sse2.LoadVector128(&ks[0]);
+			xmm3 = Sse2.LoadVector128(&ks[16]);
 
 			b1 = Sse2.Xor(b1, xmm1);
 			b2 = Sse2.Xor(b2, xmm1);
@@ -257,8 +262,8 @@ namespace Cryptography
 
 			for (int i = 1; i <= 6; ++i)
 			{
-				xmm1 = Sse2.LoadVector128(&roundKeys[2 * 16 * i]);
-				xmm3 = Sse2.LoadVector128(&roundKeys[2 * 16 * i + 16]);
+				xmm1 = Sse2.LoadVector128(&ks[2 * 16 * i]);
+				xmm3 = Sse2.LoadVector128(&ks[2 * 16 * i + 16]);
 
 				b1 = Aes.Encrypt(b1, xmm1);
 				b2 = Aes.Encrypt(b2, xmm1);
@@ -275,7 +280,7 @@ namespace Cryptography
 				b6 = Aes.Encrypt(b6, xmm3);
 			}
 
-			xmm1 = Sse2.LoadVector128(&roundKeys[14 * 16]);
+			xmm1 = Sse2.LoadVector128(&ks[14 * 16]);
 
 			b1 = Aes.EncryptLast(b1, xmm1);
 			b2 = Aes.EncryptLast(b2, xmm1);
