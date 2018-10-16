@@ -18,10 +18,27 @@ Intel Core i7-5557U CPU 3.10GHz (Broadwell), 1 CPU, 4 logical and 2 physical cor
 ```
 |                Method | Size |     Mean |     Error |    StdDev | Scaled |
 |---------------------- |----- |---------:|----------:|----------:|-------:|
-|    AES-GCM (native) | **4096** | **1.742 us** | **0.0013 us** | **0.0012 us** |   **1.00** |
+|    **AES-GCM (native)** | **4096** | **1.742 us** | **0.0013 us** | **0.0012 us** |   **1.00** |
 | AES-GCM (libsodium) | 4096 | 3.010 us | 0.0032 us | 0.0029 us |   1.73 |
 |           AES-GCM-SIV | 4096 | 1.811 us | 0.0045 us | 0.0038 us |   1.04 |
 |                       |      |          |           |           |        |
-|    AES-GCM (native) | **8192** | **2.994 us** | **0.0074 us** | **0.0066 us** |   **1.00** |
+|    **AES-GCM (native)** | **8192** | **2.994 us** | **0.0074 us** | **0.0066 us** |   **1.00** |
 | AES-GCM (libsodium) | 8192 | 5.799 us | 0.0072 us | 0.0068 us |   1.94 |
 |           AES-GCM-SIV | 8192 | 3.296 us | 0.0046 us | 0.0040 us |   1.10 |
+
+``` ini
+BenchmarkDotNet=v0.11.1, OS=Windows 10.0.17134.285 (1803/April2018Update/Redstone4)
+Intel Core i7-4800MQ CPU 2.70GHz (Max: 1.35GHz) (Haswell), 1 CPU, 8 logical and 4 physical cores
+Frequency=2630637 Hz, Resolution=380.1361 ns, Timer=TSC
+.NET Core SDK=3.0.100-alpha1-009638
+  [Host] : .NET Core 3.0.0-preview1-27003-04 (CoreCLR 4.6.27002.04, CoreFX 4.6.27002.03), 64bit RyuJIT
+```
+|                Method | Size |     Mean |     Error |    StdDev | Scaled |
+|---------------------- |----- |---------:|----------:|----------:|-------:|
+|    **AES-GCM (native)** | **4096** | **1.996 us** | **0.0040 us** | **0.0035 us** |   **1.00** |
+| AES-GCM (libsodium) | 4096 | 2.628 us | 0.0064 us | 0.0060 us |   1.32 |
+|           AES-GCM-SIV | 4096 | 1.911 us | 0.0033 us | 0.0031 us |   0.96 |
+|                       |      |          |           |           |        |
+|    **AES-GCM (native)** | **8192** | **3.710 us** | **0.0042 us** | **0.0039 us** |   **1.00** |
+| AES-GCM (libsodium) | 8192 | 5.050 us | 0.0055 us | 0.0049 us |   1.36 |
+|           AES-GCM-SIV | 8192 | 3.534 us | 0.0407 us | 0.0340 us |   0.95 |
