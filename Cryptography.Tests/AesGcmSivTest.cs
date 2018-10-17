@@ -43,6 +43,39 @@ namespace Cryptography.Tests
 			}
 		}
 
+		[Fact]
+		public void TestDecrypt()
+		{
+			var files = new string[]
+			{
+				Aes256GcmSiv,
+				Authentication1000,
+				CounterWrap,
+				Encryption1000
+			};
+
+			foreach (var vector in files.SelectMany(LoadVectors))
+			{
+				using (var siv = new AesGcmSiv(vector.Key))
+				{
+					var ciphertext = new byte[vector.Plaintext.Length];
+					var tag = new byte[16];
+
+					Array.Copy(vector.Result, ciphertext, vector.Plaintext.Length);
+					Array.Copy(vector.Result, vector.Plaintext.Length, tag, 0, tag.Length);
+
+					siv.Decrypt(vector.Nonce, ciphertext, tag, ciphertext, vector.Aad);
+					Assert.Equal(Hex.Encode(vector.Plaintext), Hex.Encode(ciphertext));
+
+					Array.Copy(vector.Result, ciphertext, vector.Plaintext.Length);
+					Array.Copy(vector.Result, vector.Plaintext.Length, tag, 0, tag.Length);
+
+					siv.Decrypt((ReadOnlySpan<byte>)vector.Nonce, ciphertext, tag, ciphertext, vector.Aad);
+					Assert.Equal(Hex.Encode(vector.Plaintext), Hex.Encode(ciphertext));
+				}
+			}
+		}
+
 		[Fact(Skip = "Takes too long to complete.")]
 		public void TestMaxInputLengthManaged()
 		{

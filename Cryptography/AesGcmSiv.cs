@@ -24,16 +24,17 @@ namespace Cryptography
 		private readonly byte* ks;
 		private bool disposed;
 
+		// TODO: add ReadOnlySpan<byte> constructor
+		// TODO: add test for invalid tag on decryption with modified inputs
+		// TODO: implement fast decryption method for large inputs
 		// TODO: add test for parameter validation
-		// TODO: test both polyval and encrypt methods on all input sizes
+		// TODO: test both polyval and encrypt/decrypt methods on all input sizes
 		// TODO: update README file
 		// TODO: make package icon
 		// TODO: add continuous integration
-		// TODO: implement decryption
-		// TODO: add test for invalid tag on decryption with modified inputs
 		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
 		// TODO: add public docs
-		// TODO: add BoringSSL docs for private methods
+		// TODO: add BoringSSL docs for private methods (also Shay's when available)
 		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
 		// TODO: try to pipeline CLMUL instructions and to load powers as needed
 
@@ -212,7 +213,41 @@ namespace Cryptography
 
 		private void Decrypt(byte* nonce, byte* ks, byte* ct, int ctLen, byte* tag, byte* pt, byte* ad, int adLen)
 		{
-			throw new NotImplementedException();
+			byte* hashKey = stackalloc byte[16];
+			byte* encKey = stackalloc byte[32];
+			byte* decTag = stackalloc byte[16];
+
+			byte* encRoundKeys = stackalloc byte[RoundKeysSizeInBytes + Align16Overhead];
+			encRoundKeys = Align16(encRoundKeys);
+
+			int* n = (int*)nonce;
+			byte* polyval = stackalloc byte[16];
+			long* lengthBlock = stackalloc long[2] { (long)adLen * 8, (long)ctLen * 8 };
+
+			var xorMask = Sse.StaticCast<int, byte>(Sse2.SetVector128(0, n[2], n[1], n[0]));
+			var andMask = Sse.StaticCast<ulong, byte>(Sse2.SetVector128(0x7fffffffffffffff, 0xffffffffffffffff));
+
+			DeriveKeys(nonce, ks, hashKey, encKey);
+			KeySchedule(encKey, encRoundKeys);
+			Encrypt4(ct, ctLen, pt, tag, encRoundKeys);
+
+			PolyvalHorner(polyval, hashKey, ad, adLen);
+			PolyvalHorner(polyval, hashKey, pt, ctLen);
+			PolyvalHorner(polyval, hashKey, (byte*)lengthBlock, 16);
+
+			var t = Sse2.LoadVector128(polyval);
+			Sse2.Store(polyval, Sse2.And(Sse2.Xor(t, xorMask), andMask));
+
+			EncryptBlock(polyval, decTag, encRoundKeys);
+
+			var tagSpan = new Span<byte>(tag, 16);
+			var decTagSpan = new Span<byte>(decTag, 16);
+
+			if (!CryptographicOperations.FixedTimeEquals(tagSpan, decTagSpan))
+			{
+				CryptographicOperations.ZeroMemory(new Span<byte>(pt, ctLen));
+				throw new CryptographicException("The computed authentication tag did not match the input authentication tag.");
+			}
 		}
 
 		private static void CheckParameters(
@@ -801,6 +836,20 @@ namespace Cryptography
 
 			b1 = Aes.EncryptLast(b1, xmm1);
 			Sse2.Store(ct, b1);
+		}
+
+		private static void EncryptBlock(byte* pt, byte* ct, byte* ks)
+		{
+			var block = Sse2.LoadVector128(pt);
+			block = Sse2.Xor(block, Sse2.LoadVector128(ks));
+
+			for (int i = 1; i < 14; ++i)
+			{
+				block = Aes.Encrypt(block, Sse2.LoadVector128(&ks[i * 16]));
+			}
+
+			block = Aes.EncryptLast(block, Sse2.LoadVector128(&ks[14 * 16]));
+			Sse2.Store(ct, block);
 		}
 
 		private static void Encrypt4(byte* pt, int ptLen, byte* ct, byte* tag, byte* ks)
