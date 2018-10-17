@@ -198,6 +198,64 @@ namespace Cryptography.Tests
 			}
 		}
 
+		[Fact]
+		public void TestParameterValidation()
+		{
+			Assert.Throws<ArgumentNullException>(() => new AesGcmSiv(null));
+			Assert.Throws<CryptographicException>(() => new AesGcmSiv(new byte[16]));
+			Assert.Throws<CryptographicException>(() => new AesGcmSiv(new byte[48]));
+
+			var key = new byte[32];
+			var nonce = new byte[12];
+			var plaintext = new byte[128];
+			var ciphertext = new byte[128];
+			var tag = new byte[16];
+			var empty = new byte[0];
+
+			using (var siv = new AesGcmSiv(key))
+			{
+				Assert.Throws<ArgumentNullException>(() => siv.Encrypt(null, plaintext, ciphertext, tag));
+				Assert.Throws<ArgumentNullException>(() => siv.Encrypt(nonce, null, ciphertext, tag));
+				Assert.Throws<ArgumentNullException>(() => siv.Encrypt(nonce, plaintext, null, tag));
+				Assert.Throws<ArgumentNullException>(() => siv.Encrypt(nonce, plaintext, ciphertext, null));
+
+				Assert.Throws<ArgumentException>(() => siv.Encrypt(empty, plaintext, ciphertext, tag));
+				Assert.Throws<ArgumentException>(() => siv.Encrypt(nonce, plaintext, ciphertext, empty));
+				Assert.Throws<ArgumentException>(() => siv.Encrypt(nonce, plaintext, empty, tag));
+				Assert.Throws<ArgumentException>(() => siv.Encrypt(nonce, empty, ciphertext, tag));
+
+				Assert.Throws<ArgumentException>(() => siv.Encrypt((ReadOnlySpan<byte>)empty, plaintext, ciphertext, tag, default));
+				Assert.Throws<ArgumentException>(() => siv.Encrypt((ReadOnlySpan<byte>)nonce, plaintext, ciphertext, empty, default));
+				Assert.Throws<ArgumentException>(() => siv.Encrypt((ReadOnlySpan<byte>)nonce, plaintext, empty, tag, default));
+				Assert.Throws<ArgumentException>(() => siv.Encrypt((ReadOnlySpan<byte>)nonce, empty, ciphertext, tag, default));
+
+				siv.Encrypt(nonce, plaintext, ciphertext, tag);
+
+				Assert.Throws<ArgumentNullException>(() => siv.Decrypt(null, ciphertext, tag, plaintext));
+				Assert.Throws<ArgumentNullException>(() => siv.Decrypt(nonce, null, tag, plaintext));
+				Assert.Throws<ArgumentNullException>(() => siv.Decrypt(nonce, ciphertext, null, plaintext));
+				Assert.Throws<ArgumentNullException>(() => siv.Decrypt(nonce, ciphertext, tag, null));
+
+				Assert.Throws<ArgumentException>(() => siv.Decrypt(empty, ciphertext, tag, plaintext));
+				Assert.Throws<ArgumentException>(() => siv.Decrypt(nonce, ciphertext, empty, plaintext));
+				Assert.Throws<ArgumentException>(() => siv.Decrypt(nonce, empty, tag, plaintext));
+				Assert.Throws<ArgumentException>(() => siv.Decrypt(nonce, ciphertext, tag, empty));
+
+				Assert.Throws<ArgumentException>(() => siv.Decrypt((ReadOnlySpan<byte>)empty, ciphertext, tag, plaintext, default));
+				Assert.Throws<ArgumentException>(() => siv.Decrypt((ReadOnlySpan<byte>)nonce, ciphertext, empty, plaintext, default));
+				Assert.Throws<ArgumentException>(() => siv.Decrypt((ReadOnlySpan<byte>)nonce, empty, tag, plaintext, default));
+				Assert.Throws<ArgumentException>(() => siv.Decrypt((ReadOnlySpan<byte>)nonce, ciphertext, tag, empty, default));
+
+				siv.Decrypt(nonce, ciphertext, tag, plaintext);
+				siv.Dispose();
+
+				Assert.Throws<ObjectDisposedException>(() => siv.Encrypt(nonce, plaintext, ciphertext, tag));
+				Assert.Throws<ObjectDisposedException>(() => siv.Encrypt((ReadOnlySpan<byte>)nonce, plaintext, ciphertext, tag, default));
+				Assert.Throws<ObjectDisposedException>(() => siv.Decrypt(nonce, ciphertext, tag, plaintext));
+				Assert.Throws<ObjectDisposedException>(() => siv.Decrypt((ReadOnlySpan<byte>)nonce, ciphertext, tag, plaintext, default));
+			}
+		}
+
 		private static IEnumerable<Vector> LoadVectors(string file)
 		{
 			var s = File.ReadAllText(file);

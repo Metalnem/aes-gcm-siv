@@ -27,7 +27,6 @@ namespace Cryptography
 		private bool disposed;
 
 		// TODO: implement fast decryption method for large inputs
-		// TODO: add test for parameter validation
 		// TODO: update README file
 		// TODO: make package icon
 		// TODO: add continuous integration
