@@ -89,7 +89,7 @@ namespace Cryptography
 			fixed (byte* tagPtr = tag)
 			fixed (byte* ad = associatedData)
 			{
-				Encrypt(noncePtr, ks, pt, plaintext.Length, ct, tagPtr, ad, associatedData.Length);
+				Encrypt(noncePtr, pt, plaintext.Length, ct, tagPtr, ad, associatedData.Length);
 			}
 		}
 
@@ -109,11 +109,11 @@ namespace Cryptography
 			fixed (byte* tagPtr = tag)
 			fixed (byte* ad = associatedData)
 			{
-				Encrypt(noncePtr, ks, pt, plaintext.Length, ct, tagPtr, ad, associatedData.Length);
+				Encrypt(noncePtr, pt, plaintext.Length, ct, tagPtr, ad, associatedData.Length);
 			}
 		}
 
-		private void Encrypt(byte* nonce, byte* ks, byte* pt, int ptLen, byte* ct, byte* tag, byte* ad, int adLen)
+		private void Encrypt(byte* nonce, byte* pt, int ptLen, byte* ct, byte* tag, byte* ad, int adLen)
 		{
 			byte* hashKey = stackalloc byte[16];
 			byte* encKey = stackalloc byte[32];
