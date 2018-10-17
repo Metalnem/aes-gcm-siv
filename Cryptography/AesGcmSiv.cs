@@ -26,7 +26,6 @@ namespace Cryptography
 		private readonly int threshold = 128;
 		private bool disposed;
 
-		// TODO: add test for invalid tag on decryption with modified inputs
 		// TODO: implement fast decryption method for large inputs
 		// TODO: add test for parameter validation
 		// TODO: update README file

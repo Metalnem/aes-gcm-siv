@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -80,6 +81,40 @@ namespace Cryptography.Tests
 
 					threshold.SetValue(siv, Int32.MaxValue);
 					TestDecryptSingle(siv, vector);
+				}
+			}
+		}
+
+		[Fact(Skip = "Takes too long to complete.")]
+		public void TestDecryptFailure()
+		{
+			var files = new string[]
+			{
+				Aes256GcmSiv,
+				Authentication1000,
+				CounterWrap,
+				Encryption1000
+			};
+
+			foreach (var vector in files.SelectMany(LoadVectors))
+			{
+				using (var siv = new AesGcmSiv(vector.Key))
+				{
+					var ciphertext = vector.Result.AsSpan(0, vector.Plaintext.Length);
+
+					for (int i = 0; i < ciphertext.Length; ++i)
+					{
+						++ciphertext[i];
+						Assert.Throws<CryptographicException>(() => TestDecryptSingle(siv, vector));
+						--ciphertext[i];
+					}
+
+					for (int i = 0; i < vector.Aad.Length; ++i)
+					{
+						++vector.Aad[i];
+						Assert.Throws<CryptographicException>(() => TestDecryptSingle(siv, vector));
+						--vector.Aad[i];
+					}
 				}
 			}
 		}
