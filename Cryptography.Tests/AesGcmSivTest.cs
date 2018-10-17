@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -42,8 +43,8 @@ namespace Cryptography.Tests
 			}
 		}
 
-		[Fact]
-		public void TestMaxInputLength()
+		[Fact(Skip = "Takes too long to complete.")]
+		public void TestMaxInputLengthManaged()
 		{
 			var key = new byte[32];
 			var nonce = new byte[12];
@@ -65,6 +66,41 @@ namespace Cryptography.Tests
 
 				siv.Encrypt(nonce, plaintext, plaintext, tag, plaintext);
 				Assert.Equal("6d15c063e7c3d68db84201d887ddde46", Hex.Encode(tag));
+			}
+		}
+
+		[Fact(Skip = "Takes too long to complete.")]
+		public unsafe void TestMaxInputLengthUnmanaged()
+		{
+			var length = Int32.MaxValue;
+			var buffer = Marshal.AllocHGlobal(length);
+
+			try
+			{
+				var key = new byte[32];
+				var nonce = new byte[12];
+				var plaintext = new Span<byte>(buffer.ToPointer(), length);
+				var tag = new byte[16];
+
+				using (var siv = new AesGcmSiv(key))
+				{
+					siv.Encrypt(nonce, plaintext, plaintext, tag, default);
+					Assert.Equal("b8246fbcb073f59dbf963b46a19db688", Hex.Encode(tag));
+
+					plaintext.Clear();
+
+					siv.Encrypt(nonce, default, default, tag, plaintext);
+					Assert.Equal("c5b65922f2f64799a1d62c8036520c9d", Hex.Encode(tag));
+
+					plaintext.Clear();
+
+					siv.Encrypt(nonce, plaintext, plaintext, tag, plaintext);
+					Assert.Equal("e017665be4c97b25610602e6e4c81a5e", Hex.Encode(tag));
+				}
+			}
+			finally
+			{
+				Marshal.FreeHGlobal(buffer);
 			}
 		}
 

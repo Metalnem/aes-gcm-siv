@@ -24,13 +24,13 @@ namespace Cryptography
 		private readonly byte* ks;
 		private bool disposed;
 
+		// TODO: add test for parameter validation
 		// TODO: test both polyval and encrypt methods on all input sizes
 		// TODO: update README file
 		// TODO: make package icon
-		// TODO: add test for 0x7fffffff spans
 		// TODO: add continuous integration
 		// TODO: implement decryption
-		// TODO: add more tests (parameter validation and modified inputs, for example)
+		// TODO: add test for invalid tag on decryption with modified inputs
 		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
 		// TODO: add public docs
 		// TODO: add BoringSSL docs for private methods
