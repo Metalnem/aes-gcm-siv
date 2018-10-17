@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
@@ -14,15 +15,18 @@ namespace Cryptography
 		private const int KeySizeInBytes = 32;
 		private const int NonceSizeInBytes = 12;
 		private const int TagSizeInBytes = 16;
+		private const int RoundKeysSizeInBytes = 15 * 16;
+
+		private const int Align16Overhead = 15;
+		private const ulong Align16Mask = ~15ul;
 
 		private readonly byte[] roundKeys;
 		private bool disposed;
 
-		// TODO: test on inputs larger than 0x7fffffc7 bytes using unmanaged arrays
+		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
 		// TODO: test both polyval and encrypt methods on all input sizes
 		// TODO: update README file
 		// TODO: make package icon
-		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
 		// TODO: implement decryption
 		// TODO: add more tests (parameter validation and modified inputs, for example)
 		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
@@ -45,7 +49,7 @@ namespace Cryptography
 				throw new CryptographicException("Specified key is not a valid size for this algorithm.");
 			}
 
-			roundKeys = new byte[15 * 16];
+			roundKeys = new byte[RoundKeysSizeInBytes];
 
 			fixed (byte* keyPtr = key)
 			fixed (byte* ks = roundKeys)
@@ -112,8 +116,10 @@ namespace Cryptography
 		private void Encrypt(byte* nonce, byte* ks, byte* pt, int ptLen, byte* ct, byte* tag, byte* ad, int adLen)
 		{
 			byte* hashKey = stackalloc byte[16];
-			byte* encryptionKey = stackalloc byte[32];
-			byte* encryptionRoundKeys = stackalloc byte[15 * 16];
+			byte* encKey = stackalloc byte[32];
+
+			byte* encRoundKeys = stackalloc byte[RoundKeysSizeInBytes + Align16Overhead];
+			encRoundKeys = Align16(encRoundKeys);
 
 			int* n = (int*)nonce;
 			byte* polyval = stackalloc byte[16];
@@ -122,7 +128,7 @@ namespace Cryptography
 			var xorMask = Sse.StaticCast<int, byte>(Sse2.SetVector128(0, n[2], n[1], n[0]));
 			var andMask = Sse.StaticCast<ulong, byte>(Sse2.SetVector128(0x7fffffffffffffff, 0xffffffffffffffff));
 
-			DeriveKeys(nonce, ks, hashKey, encryptionKey);
+			DeriveKeys(nonce, ks, hashKey, encKey);
 
 			if (ptLen + adLen <= 128)
 			{
@@ -133,8 +139,8 @@ namespace Cryptography
 				var t = Sse2.LoadVector128(polyval);
 				Sse2.Store(polyval, Sse2.And(Sse2.Xor(t, xorMask), andMask));
 
-				EncryptTag(polyval, tag, encryptionKey, encryptionRoundKeys);
-				Encrypt4(pt, ptLen, ct, tag, encryptionRoundKeys);
+				EncryptTag(polyval, tag, encKey, encRoundKeys);
+				Encrypt4(pt, ptLen, ct, tag, encRoundKeys);
 			}
 			else
 			{
@@ -148,8 +154,8 @@ namespace Cryptography
 				var t = Sse2.LoadVector128(polyval);
 				Sse2.Store(polyval, Sse2.And(Sse2.Xor(t, xorMask), andMask));
 
-				EncryptTag(polyval, tag, encryptionKey, encryptionRoundKeys);
-				Encrypt8(pt, ptLen, ct, tag, encryptionRoundKeys);
+				EncryptTag(polyval, tag, encKey, encRoundKeys);
+				Encrypt8(pt, ptLen, ct, tag, encRoundKeys);
 			}
 		}
 
@@ -280,7 +286,7 @@ namespace Cryptography
 			Sse2.Store(&ks[14 * 16], xmm1);
 		}
 
-		private static void DeriveKeys(byte* nonce, byte* ks, byte* hashKey, byte* encryptionKey)
+		private static void DeriveKeys(byte* nonce, byte* ks, byte* hashKey, byte* encKey)
 		{
 			var n = (int*)nonce;
 			var one = Sse2.SetVector128(0, 0, 0, 1);
@@ -341,10 +347,10 @@ namespace Cryptography
 			Sse2.StoreLow((long*)hashKey + 0, Sse.StaticCast<byte, long>(b1));
 			Sse2.StoreLow((long*)hashKey + 1, Sse.StaticCast<byte, long>(b2));
 
-			Sse2.StoreLow((long*)encryptionKey + 0, Sse.StaticCast<byte, long>(b3));
-			Sse2.StoreLow((long*)encryptionKey + 1, Sse.StaticCast<byte, long>(b4));
-			Sse2.StoreLow((long*)encryptionKey + 2, Sse.StaticCast<byte, long>(b5));
-			Sse2.StoreLow((long*)encryptionKey + 3, Sse.StaticCast<byte, long>(b6));
+			Sse2.StoreLow((long*)encKey + 0, Sse.StaticCast<byte, long>(b3));
+			Sse2.StoreLow((long*)encKey + 1, Sse.StaticCast<byte, long>(b4));
+			Sse2.StoreLow((long*)encKey + 2, Sse.StaticCast<byte, long>(b5));
+			Sse2.StoreLow((long*)encKey + 3, Sse.StaticCast<byte, long>(b6));
 		}
 
 		private static void InitPowersTable(byte* powersTable, int size, byte* hashKey)
@@ -1036,6 +1042,12 @@ namespace Cryptography
 				CryptographicOperations.ZeroMemory(roundKeys);
 				disposed = true;
 			}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static byte* Align16(byte* ptr)
+		{
+			return (byte*)(((ulong)ptr + Align16Overhead) & Align16Mask);
 		}
 
 		private static void ThrowIfNull(object value, string name)
