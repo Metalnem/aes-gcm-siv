@@ -26,7 +26,6 @@ namespace Cryptography
 		private readonly int threshold = 128;
 		private bool disposed;
 
-		// TODO: add ReadOnlySpan<byte> constructor
 		// TODO: add test for invalid tag on decryption with modified inputs
 		// TODO: implement fast decryption method for large inputs
 		// TODO: add test for parameter validation
@@ -39,14 +38,16 @@ namespace Cryptography
 		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
 		// TODO: try to pipeline CLMUL instructions and to load powers as needed
 
-		public AesGcmSiv(byte[] key)
+		public AesGcmSiv(byte[] key) : this((ReadOnlySpan<byte>)(key ?? throw new ArgumentNullException()))
+		{
+		}
+
+		public AesGcmSiv(ReadOnlySpan<byte> key)
 		{
 			if (!IsSupported)
 			{
 				throw new PlatformNotSupportedException();
 			}
-
-			ThrowIfNull(key, nameof(key));
 
 			if (key.Length != KeySizeInBytes)
 			{
@@ -248,28 +249,6 @@ namespace Cryptography
 			{
 				CryptographicOperations.ZeroMemory(new Span<byte>(pt, ctLen));
 				throw new CryptographicException("The computed authentication tag did not match the input authentication tag.");
-			}
-		}
-
-		private static void CheckParameters(
-			ReadOnlySpan<byte> plaintext,
-			ReadOnlySpan<byte> ciphertext,
-			ReadOnlySpan<byte> nonce,
-			ReadOnlySpan<byte> tag)
-		{
-			if (plaintext.Length != ciphertext.Length)
-			{
-				throw new ArgumentException("Plaintext and ciphertext must have the same length.");
-			}
-
-			if (nonce.Length != NonceSizeInBytes)
-			{
-				throw new ArgumentException("The specified nonce is not a valid size for this algorithm.", nameof(nonce));
-			}
-
-			if (tag.Length != TagSizeInBytes)
-			{
-				throw new ArgumentException("The specified tag is not a valid size for this algorithm.", nameof(tag));
 			}
 		}
 
@@ -1115,6 +1094,28 @@ namespace Cryptography
 			if (disposed)
 			{
 				throw new ObjectDisposedException(nameof(AesGcmSiv));
+			}
+		}
+
+		private static void CheckParameters(
+			ReadOnlySpan<byte> plaintext,
+			ReadOnlySpan<byte> ciphertext,
+			ReadOnlySpan<byte> nonce,
+			ReadOnlySpan<byte> tag)
+		{
+			if (plaintext.Length != ciphertext.Length)
+			{
+				throw new ArgumentException("Plaintext and ciphertext must have the same length.");
+			}
+
+			if (nonce.Length != NonceSizeInBytes)
+			{
+				throw new ArgumentException("The specified nonce is not a valid size for this algorithm.", nameof(nonce));
+			}
+
+			if (tag.Length != TagSizeInBytes)
+			{
+				throw new ArgumentException("The specified tag is not a valid size for this algorithm.", nameof(tag));
 			}
 		}
 	}
