@@ -20,13 +20,15 @@ namespace Cryptography
 		private const int Align16Overhead = 15;
 		private const ulong Align16Mask = ~15ul;
 
-		private readonly byte[] roundKeys;
+		private readonly IntPtr ptr;
+		private readonly byte* ks;
 		private bool disposed;
 
-		// TODO: call Marshal.AllocHGlobal for round keys in constructor and align the result
 		// TODO: test both polyval and encrypt methods on all input sizes
 		// TODO: update README file
 		// TODO: make package icon
+		// TODO: add test for 0x7fffffff spans
+		// TODO: add continuous integration
 		// TODO: implement decryption
 		// TODO: add more tests (parameter validation and modified inputs, for example)
 		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
@@ -49,10 +51,10 @@ namespace Cryptography
 				throw new CryptographicException("Specified key is not a valid size for this algorithm.");
 			}
 
-			roundKeys = new byte[RoundKeysSizeInBytes];
+			ptr = Marshal.AllocHGlobal(RoundKeysSizeInBytes + Align16Overhead);
+			ks = Align16((byte*)ptr.ToPointer());
 
 			fixed (byte* keyPtr = key)
-			fixed (byte* ks = roundKeys)
 			{
 				KeySchedule(keyPtr, ks);
 			}
@@ -82,7 +84,6 @@ namespace Cryptography
 			}
 
 			fixed (byte* noncePtr = nonce)
-			fixed (byte* ks = roundKeys)
 			fixed (byte* pt = plaintext)
 			fixed (byte* ct = ciphertext)
 			fixed (byte* tagPtr = tag)
@@ -103,7 +104,6 @@ namespace Cryptography
 			CheckParameters(plaintext, ciphertext, nonce, tag);
 
 			fixed (byte* noncePtr = nonce)
-			fixed (byte* ks = roundKeys)
 			fixed (byte* pt = plaintext)
 			fixed (byte* ct = ciphertext)
 			fixed (byte* tagPtr = tag)
@@ -181,7 +181,6 @@ namespace Cryptography
 			}
 
 			fixed (byte* noncePtr = nonce)
-			fixed (byte* ks = roundKeys)
 			fixed (byte* ct = ciphertext)
 			fixed (byte* tagPtr = tag)
 			fixed (byte* pt = plaintext)
@@ -202,7 +201,6 @@ namespace Cryptography
 			CheckParameters(plaintext, ciphertext, nonce, tag);
 
 			fixed (byte* noncePtr = nonce)
-			fixed (byte* ks = roundKeys)
 			fixed (byte* ct = ciphertext)
 			fixed (byte* tagPtr = tag)
 			fixed (byte* pt = plaintext)
@@ -1039,7 +1037,11 @@ namespace Cryptography
 		{
 			if (!disposed)
 			{
-				CryptographicOperations.ZeroMemory(roundKeys);
+				var key = new Span<byte>(ks, RoundKeysSizeInBytes);
+
+				CryptographicOperations.ZeroMemory(key);
+				Marshal.FreeHGlobal(ptr);
+
 				disposed = true;
 			}
 		}
