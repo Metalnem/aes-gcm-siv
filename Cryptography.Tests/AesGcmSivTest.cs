@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -15,6 +16,9 @@ namespace Cryptography.Tests
 		private const string Authentication1000 = "Vectors/authentication-1000.json";
 		private const string CounterWrap = "Vectors/counter-wrap.json";
 		private const string Encryption1000 = "Vectors/encryption-1000.json";
+
+		private static readonly FieldInfo threshold =
+			typeof(AesGcmSiv).GetField("threshold", BindingFlags.Instance | BindingFlags.NonPublic);
 
 		[Fact]
 		public void TestEncrypt()
@@ -31,16 +35,27 @@ namespace Cryptography.Tests
 			{
 				using (var siv = new AesGcmSiv(vector.Key))
 				{
-					var tag = new byte[16];
-					var ciphertext = new byte[vector.Plaintext.Length];
+					TestEncryptSingle(siv, vector);
 
-					siv.Encrypt(vector.Nonce, vector.Plaintext, ciphertext, tag, vector.Aad);
-					Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(Concat(ciphertext, tag)));
+					threshold.SetValue(siv, -1);
+					TestEncryptSingle(siv, vector);
 
-					siv.Encrypt((ReadOnlySpan<byte>)vector.Nonce, vector.Plaintext, ciphertext, tag, vector.Aad);
-					Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(Concat(ciphertext, tag)));
+					threshold.SetValue(siv, Int32.MaxValue);
+					TestEncryptSingle(siv, vector);
 				}
 			}
+		}
+
+		private void TestEncryptSingle(AesGcmSiv siv, Vector vector)
+		{
+			var tag = new byte[16];
+			var ciphertext = new byte[vector.Plaintext.Length];
+
+			siv.Encrypt(vector.Nonce, vector.Plaintext, ciphertext, tag, vector.Aad);
+			Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(Concat(ciphertext, tag)));
+
+			siv.Encrypt((ReadOnlySpan<byte>)vector.Nonce, vector.Plaintext, ciphertext, tag, vector.Aad);
+			Assert.Equal(Hex.Encode(vector.Result), Hex.Encode(Concat(ciphertext, tag)));
 		}
 
 		[Fact]
@@ -58,22 +73,33 @@ namespace Cryptography.Tests
 			{
 				using (var siv = new AesGcmSiv(vector.Key))
 				{
-					var ciphertext = new byte[vector.Plaintext.Length];
-					var tag = new byte[16];
+					TestDecryptSingle(siv, vector);
 
-					Array.Copy(vector.Result, ciphertext, vector.Plaintext.Length);
-					Array.Copy(vector.Result, vector.Plaintext.Length, tag, 0, tag.Length);
+					threshold.SetValue(siv, -1);
+					TestDecryptSingle(siv, vector);
 
-					siv.Decrypt(vector.Nonce, ciphertext, tag, ciphertext, vector.Aad);
-					Assert.Equal(Hex.Encode(vector.Plaintext), Hex.Encode(ciphertext));
-
-					Array.Copy(vector.Result, ciphertext, vector.Plaintext.Length);
-					Array.Copy(vector.Result, vector.Plaintext.Length, tag, 0, tag.Length);
-
-					siv.Decrypt((ReadOnlySpan<byte>)vector.Nonce, ciphertext, tag, ciphertext, vector.Aad);
-					Assert.Equal(Hex.Encode(vector.Plaintext), Hex.Encode(ciphertext));
+					threshold.SetValue(siv, Int32.MaxValue);
+					TestDecryptSingle(siv, vector);
 				}
 			}
+		}
+
+		private void TestDecryptSingle(AesGcmSiv siv, Vector vector)
+		{
+			var ciphertext = new byte[vector.Plaintext.Length];
+			var tag = new byte[16];
+
+			Array.Copy(vector.Result, ciphertext, vector.Plaintext.Length);
+			Array.Copy(vector.Result, vector.Plaintext.Length, tag, 0, tag.Length);
+
+			siv.Decrypt(vector.Nonce, ciphertext, tag, ciphertext, vector.Aad);
+			Assert.Equal(Hex.Encode(vector.Plaintext), Hex.Encode(ciphertext));
+
+			Array.Copy(vector.Result, ciphertext, vector.Plaintext.Length);
+			Array.Copy(vector.Result, vector.Plaintext.Length, tag, 0, tag.Length);
+
+			siv.Decrypt((ReadOnlySpan<byte>)vector.Nonce, ciphertext, tag, ciphertext, vector.Aad);
+			Assert.Equal(Hex.Encode(vector.Plaintext), Hex.Encode(ciphertext));
 		}
 
 		[Fact(Skip = "Takes too long to complete.")]

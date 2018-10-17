@@ -22,17 +22,18 @@ namespace Cryptography
 
 		private readonly IntPtr ptr;
 		private readonly byte* ks;
+
+		private readonly int threshold = 128;
 		private bool disposed;
 
 		// TODO: add ReadOnlySpan<byte> constructor
 		// TODO: add test for invalid tag on decryption with modified inputs
 		// TODO: implement fast decryption method for large inputs
 		// TODO: add test for parameter validation
-		// TODO: test both polyval and encrypt/decrypt methods on all input sizes
 		// TODO: update README file
 		// TODO: make package icon
 		// TODO: add continuous integration
-		// TODO: more consistent naming and indexing (shorter names for pointers and sizes)
+		// TODO: more consistent naming (shorter names for pointers and sizes)
 		// TODO: add public docs
 		// TODO: add BoringSSL docs for private methods (also Shay's when available)
 		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
@@ -131,7 +132,7 @@ namespace Cryptography
 
 			DeriveKeys(nonce, ks, hashKey, encKey);
 
-			if (ptLen + adLen <= 128)
+			if (ptLen + adLen <= threshold)
 			{
 				PolyvalHorner(polyval, hashKey, ad, adLen);
 				PolyvalHorner(polyval, hashKey, pt, ptLen);
