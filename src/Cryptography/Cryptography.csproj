@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>AES-GCM-SIV.NET</PackageId>
     <Title>AES-GCM-SIV.NET</Title>
-    <PackageVersion>0.1.0</PackageVersion>
+    <PackageVersion>0.1.0-alpha</PackageVersion>
     <Authors>Nemanja Mijailovic</Authors>
     <RepositoryUrl>https://github.com/Metalnem/aes-gcm-siv.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

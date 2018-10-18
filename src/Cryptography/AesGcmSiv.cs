@@ -8,6 +8,10 @@ using Aes = System.Runtime.Intrinsics.X86.Aes;
 
 namespace Cryptography
 {
+	/// <summary>
+	/// AES-256-GCM-SIV nonce misuse-resistant authenticated encryption mode, defined in
+	/// <see href="https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08">draft-irtf-cfrg-gcmsiv-08</see>.
+	/// </summary>
 	public unsafe sealed partial class AesGcmSiv : IDisposable
 	{
 		private static readonly byte[] Empty = new byte[0];
@@ -26,10 +30,35 @@ namespace Cryptography
 		private readonly int threshold = 128;
 		private bool disposed;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="AesGcmSiv"/> class.
+		/// </summary>
+		/// <param name="key">The secret key for AES-256-GCM-SIV encryption.</param>
+		/// <returns>An AES-256-GCM-SIV instance.</returns>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if the <paramref name="key"/> is null.
+		/// </exception>
+		/// <exception cref="PlatformNotSupportedException">
+		/// Thrown if the CPU doesn't implement AES and CLMUL instruction sets.
+		/// </exception>
+		/// <exception cref="CryptographicException">
+		/// Thrown if the <paramref name="key"/> is not 32 bytes in length.
+		/// </exception>
 		public AesGcmSiv(byte[] key) : this((ReadOnlySpan<byte>)(key ?? throw new ArgumentNullException()))
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="AesGcmSiv"/> class.
+		/// </summary>
+		/// <param name="key">The secret key for AES-256-GCM-SIV encryption.</param>
+		/// <returns>An AES-256-GCM-SIV instance.</returns>
+		/// <exception cref="PlatformNotSupportedException">
+		/// Thrown if the CPU doesn't support AES and CLMUL instruction sets.
+		/// </exception>
+		/// <exception cref="CryptographicException">
+		/// Thrown if the <paramref name="key"/> is not 32 bytes in length.
+		/// </exception>
 		public AesGcmSiv(ReadOnlySpan<byte> key)
 		{
 			if (!IsSupported)
@@ -51,8 +80,33 @@ namespace Cryptography
 			}
 		}
 
+		/// <summary>
+		/// Returns true if the CPU supports AES and CLMUL instruction sets, false otherwise.
+		/// </summary>
 		public static bool IsSupported => Aes.IsSupported && Pclmulqdq.IsSupported;
 
+		/// <summary>
+		/// Encrypt encrypts and authenticates the plaintext,
+		/// and authenticates the optional associated data.
+		/// </summary>
+		/// <param name="nonce">The 12-byte nonce. It is recommended to use randomnly chosen nonces.</param>
+		/// <param name="plaintext">The plaintext to encrypt.</param>
+		/// <param name="ciphertext">The buffer for the ciphertext. It must be the same length as the plaintext.</param>
+		/// <param name="tag">The 16-byte buffer for the authentication tag.</param>
+		/// <param name="associatedData">Associated data to authenticate. Can be null.</param>
+		/// <exception cref="ObjectDisposedException">
+		/// Thrown if the current instance has already been disposed.
+		/// </exception>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if either <paramref name="nonce"/>, <paramref name="plaintext"/>,
+		/// <paramref name="ciphertext"/>, or <paramref name="tag"/> is null.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// Thrown if any of the following conditions is satisfied:
+		/// <para>- <paramref name="plaintext"/> and <paramref name="ciphertext"/> are not the same length.</para>
+		/// <para>- <paramref name="nonce"/> is not 12 bytes in length.</para>
+		/// <para>- <paramref name="tag"/> is not 16 bytes in length.</para>
+		/// </exception>
 		public void Encrypt(
 			byte[] nonce,
 			byte[] plaintext,
@@ -84,6 +138,24 @@ namespace Cryptography
 			}
 		}
 
+		/// <summary>
+		/// Encrypt encrypts and authenticates the plaintext,
+		/// and authenticates the optional associated data.
+		/// </summary>
+		/// <param name="nonce">The 12-byte nonce. It is recommended to use randomnly chosen nonces.</param>
+		/// <param name="plaintext">The plaintext to encrypt.</param>
+		/// <param name="ciphertext">The buffer for the ciphertext. It must be the same length as the plaintext.</param>
+		/// <param name="tag">The 16-byte buffer for the authentication tag.</param>
+		/// <param name="associatedData">Associated data to authenticate. Can be null.</param>
+		/// <exception cref="ObjectDisposedException">
+		/// Thrown if the current instance has already been disposed.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// Thrown if any of the following conditions is satisfied:
+		/// <para>- <paramref name="plaintext"/> and <paramref name="ciphertext"/> are not the same length.</para>
+		/// <para>- <paramref name="nonce"/> is not 12 bytes in length.</para>
+		/// <para>- <paramref name="tag"/> is not 16 bytes in length.</para>
+		/// </exception>
 		public void Encrypt(
 			ReadOnlySpan<byte> nonce,
 			ReadOnlySpan<byte> plaintext,
@@ -150,6 +222,28 @@ namespace Cryptography
 			}
 		}
 
+		/// <summary>
+		/// Decrypt decrypts the ciphertext, and authenticates the
+		/// decrypted plaintext and the optional associated data.
+		/// </summary>
+		/// <param name="nonce">The 12-byte nonce that was previously used for encryption.</param>
+		/// <param name="ciphertext">The ciphertext to decrypt.</param>
+		/// <param name="tag">The 16-byte authentication tag.</param>
+		/// <param name="plaintext">The buffer for the plaintext. It must be the same length as the ciphertext.</param>
+		/// <param name="associatedData">Associated data to authenticate. Can be null.</param>
+		/// <exception cref="ObjectDisposedException">
+		/// Thrown if the current instance has already been disposed.
+		/// </exception>
+		/// <exception cref="ArgumentNullException">
+		/// Thrown if either <paramref name="nonce"/>, <paramref name="plaintext"/>,
+		/// <paramref name="ciphertext"/>, or <paramref name="tag"/> is null.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// Thrown if any of the following conditions is satisfied:
+		/// <para>- <paramref name="plaintext"/> and <paramref name="ciphertext"/> are not the same length.</para>
+		/// <para>- <paramref name="nonce"/> is not 12 bytes in length.</para>
+		/// <para>- <paramref name="tag"/> is not 16 bytes in length.</para>
+		/// </exception>
 		public void Decrypt(
 			byte[] nonce,
 			byte[] ciphertext,
@@ -181,37 +275,24 @@ namespace Cryptography
 			}
 		}
 
-		public void Decrypt2(
-			byte[] nonce,
-			byte[] ciphertext,
-			byte[] tag,
-			byte[] plaintext,
-			byte[] associatedData = null)
-		{
-			ThrowIfDisposed();
-
-			ThrowIfNull(nonce, nameof(nonce));
-			ThrowIfNull(plaintext, nameof(plaintext));
-			ThrowIfNull(ciphertext, nameof(ciphertext));
-			ThrowIfNull(tag, nameof(tag));
-
-			CheckParameters(plaintext, ciphertext, nonce, tag);
-
-			if (associatedData is null)
-			{
-				associatedData = Empty;
-			}
-
-			fixed (byte* noncePtr = nonce)
-			fixed (byte* ct = ciphertext)
-			fixed (byte* tagPtr = tag)
-			fixed (byte* pt = plaintext)
-			fixed (byte* ad = associatedData)
-			{
-				Decrypt2(noncePtr, ks, ct, ciphertext.Length, tagPtr, pt, ad, associatedData.Length);
-			}
-		}
-
+		/// <summary>
+		/// Decrypt decrypts the ciphertext, and authenticates the
+		/// decrypted plaintext and the optional associated data.
+		/// </summary>
+		/// <param name="nonce">The 12-byte nonce that was previously used for encryption.</param>
+		/// <param name="ciphertext">The ciphertext to decrypt.</param>
+		/// <param name="tag">The 16-byte authentication tag.</param>
+		/// <param name="plaintext">The buffer for the plaintext. It must be the same length as the ciphertext.</param>
+		/// <param name="associatedData">Associated data to authenticate. Can be null.</param>
+		/// <exception cref="ObjectDisposedException">
+		/// Thrown if the current instance has already been disposed.
+		/// </exception>
+		/// <exception cref="ArgumentException">
+		/// Thrown if any of the following conditions is satisfied:
+		/// <para>- <paramref name="plaintext"/> and <paramref name="ciphertext"/> are not the same length.</para>
+		/// <para>- <paramref name="nonce"/> is not 12 bytes in length.</para>
+		/// <para>- <paramref name="tag"/> is not 16 bytes in length.</para>
+		/// </exception>
 		public void Decrypt(
 			ReadOnlySpan<byte> nonce,
 			ReadOnlySpan<byte> ciphertext,
@@ -267,60 +348,6 @@ namespace Cryptography
 				PolyvalHorner(polyval, hashKey, ad, adLen);
 				DecryptPowersTable(ct, ctLen, pt, polyval, powersTable, tag, encRoundKeys);
 				PolyvalHorner(polyval, hashKey, (byte*)lengthBlock, 16);
-			}
-
-			var t = Sse2.LoadVector128(polyval);
-			Sse2.Store(polyval, Sse2.And(Sse2.Xor(t, xorMask), andMask));
-
-			EncryptBlock(polyval, decTag, encRoundKeys);
-
-			var tagSpan = new Span<byte>(tag, 16);
-			var decTagSpan = new Span<byte>(decTag, 16);
-
-			if (!CryptographicOperations.FixedTimeEquals(tagSpan, decTagSpan))
-			{
-				CryptographicOperations.ZeroMemory(new Span<byte>(pt, ctLen));
-				throw new CryptographicException("The computed authentication tag did not match the input authentication tag.");
-			}
-		}
-
-		private void Decrypt2(byte* nonce, byte* ks, byte* ct, int ctLen, byte* tag, byte* pt, byte* ad, int adLen)
-		{
-			byte* hashKey = stackalloc byte[16];
-			byte* encKey = stackalloc byte[32];
-			byte* decTag = stackalloc byte[16];
-
-			byte* encRoundKeys = stackalloc byte[RoundKeysSizeInBytes + Align16Overhead];
-			encRoundKeys = Align16(encRoundKeys);
-
-			int* n = (int*)nonce;
-			byte* polyval = stackalloc byte[16];
-			long* lengthBlock = stackalloc long[2] { (long)adLen * 8, (long)ctLen * 8 };
-
-			var xorMask = Sse.StaticCast<int, byte>(Sse2.SetVector128(0, n[2], n[1], n[0]));
-			var andMask = Sse.StaticCast<ulong, byte>(Sse2.SetVector128(0x7fffffffffffffff, 0xffffffffffffffff));
-
-			DeriveKeys(nonce, ks, hashKey, encKey);
-			KeySchedule(encKey, encRoundKeys);
-
-			if (ctLen + adLen <= threshold)
-			{
-				Encrypt4(ct, ctLen, pt, tag, encRoundKeys);
-
-				PolyvalHorner(polyval, hashKey, ad, adLen);
-				PolyvalHorner(polyval, hashKey, pt, ctLen);
-				PolyvalHorner(polyval, hashKey, (byte*)lengthBlock, 16);
-			}
-			else
-			{
-				Encrypt8(ct, ctLen, pt, tag, encRoundKeys);
-
-				byte* powersTable = stackalloc byte[8 * 16];
-				InitPowersTable(powersTable, 8, hashKey);
-
-				PolyvalPowersTable(polyval, powersTable, ad, adLen);
-				PolyvalPowersTable(polyval, powersTable, pt, ctLen);
-				PolyvalPowersTable(polyval, powersTable, (byte*)lengthBlock, 16);
 			}
 
 			var t = Sse2.LoadVector128(polyval);
@@ -553,6 +580,9 @@ namespace Cryptography
 			Sse2.Store(ct, block);
 		}
 
+		/// <summary>
+		/// Disposes this object.
+		/// </summary>
 		public void Dispose()
 		{
 			if (!disposed)
