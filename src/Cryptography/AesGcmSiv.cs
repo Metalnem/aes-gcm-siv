@@ -181,6 +181,37 @@ namespace Cryptography
 			}
 		}
 
+		public void Decrypt2(
+			byte[] nonce,
+			byte[] ciphertext,
+			byte[] tag,
+			byte[] plaintext,
+			byte[] associatedData = null)
+		{
+			ThrowIfDisposed();
+
+			ThrowIfNull(nonce, nameof(nonce));
+			ThrowIfNull(plaintext, nameof(plaintext));
+			ThrowIfNull(ciphertext, nameof(ciphertext));
+			ThrowIfNull(tag, nameof(tag));
+
+			CheckParameters(plaintext, ciphertext, nonce, tag);
+
+			if (associatedData is null)
+			{
+				associatedData = Empty;
+			}
+
+			fixed (byte* noncePtr = nonce)
+			fixed (byte* ct = ciphertext)
+			fixed (byte* tagPtr = tag)
+			fixed (byte* pt = plaintext)
+			fixed (byte* ad = associatedData)
+			{
+				Decrypt2(noncePtr, ks, ct, ciphertext.Length, tagPtr, pt, ad, associatedData.Length);
+			}
+		}
+
 		public void Decrypt(
 			ReadOnlySpan<byte> nonce,
 			ReadOnlySpan<byte> ciphertext,
@@ -236,6 +267,60 @@ namespace Cryptography
 				PolyvalHorner(polyval, hashKey, ad, adLen);
 				DecryptPowersTable(ct, ctLen, pt, polyval, powersTable, tag, encRoundKeys);
 				PolyvalHorner(polyval, hashKey, (byte*)lengthBlock, 16);
+			}
+
+			var t = Sse2.LoadVector128(polyval);
+			Sse2.Store(polyval, Sse2.And(Sse2.Xor(t, xorMask), andMask));
+
+			EncryptBlock(polyval, decTag, encRoundKeys);
+
+			var tagSpan = new Span<byte>(tag, 16);
+			var decTagSpan = new Span<byte>(decTag, 16);
+
+			if (!CryptographicOperations.FixedTimeEquals(tagSpan, decTagSpan))
+			{
+				CryptographicOperations.ZeroMemory(new Span<byte>(pt, ctLen));
+				throw new CryptographicException("The computed authentication tag did not match the input authentication tag.");
+			}
+		}
+
+		private void Decrypt2(byte* nonce, byte* ks, byte* ct, int ctLen, byte* tag, byte* pt, byte* ad, int adLen)
+		{
+			byte* hashKey = stackalloc byte[16];
+			byte* encKey = stackalloc byte[32];
+			byte* decTag = stackalloc byte[16];
+
+			byte* encRoundKeys = stackalloc byte[RoundKeysSizeInBytes + Align16Overhead];
+			encRoundKeys = Align16(encRoundKeys);
+
+			int* n = (int*)nonce;
+			byte* polyval = stackalloc byte[16];
+			long* lengthBlock = stackalloc long[2] { (long)adLen * 8, (long)ctLen * 8 };
+
+			var xorMask = Sse.StaticCast<int, byte>(Sse2.SetVector128(0, n[2], n[1], n[0]));
+			var andMask = Sse.StaticCast<ulong, byte>(Sse2.SetVector128(0x7fffffffffffffff, 0xffffffffffffffff));
+
+			DeriveKeys(nonce, ks, hashKey, encKey);
+			KeySchedule(encKey, encRoundKeys);
+
+			if (ctLen + adLen <= threshold)
+			{
+				Encrypt4(ct, ctLen, pt, tag, encRoundKeys);
+
+				PolyvalHorner(polyval, hashKey, ad, adLen);
+				PolyvalHorner(polyval, hashKey, pt, ctLen);
+				PolyvalHorner(polyval, hashKey, (byte*)lengthBlock, 16);
+			}
+			else
+			{
+				Encrypt8(ct, ctLen, pt, tag, encRoundKeys);
+
+				byte* powersTable = stackalloc byte[8 * 16];
+				InitPowersTable(powersTable, 8, hashKey);
+
+				PolyvalPowersTable(polyval, powersTable, ad, adLen);
+				PolyvalPowersTable(polyval, powersTable, pt, ctLen);
+				PolyvalPowersTable(polyval, powersTable, (byte*)lengthBlock, 16);
 			}
 
 			var t = Sse2.LoadVector128(polyval);
