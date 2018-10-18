@@ -68,45 +68,35 @@ namespace Cryptography
 
 			for (int i = 0; i < remainder4; ++i)
 			{
-				var tmp0 = ctr;
+				var tmp = ctr;
 				ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(ks));
+				tmp = Sse2.Xor(tmp, Sse2.LoadVector128(ks));
 
 				for (int j = 1; j < 14; ++j)
 				{
-					tmp0 = Aes.Encrypt(tmp0, Sse2.LoadVector128(&ks[j * 16]));
+					tmp = Aes.Encrypt(tmp, Sse2.LoadVector128(&ks[j * 16]));
 				}
 
-				tmp0 = Aes.EncryptLast(tmp0, Sse2.LoadVector128(&ks[14 * 16]));
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(&pt[(remainder4Pos + i) * 16]));
-				Sse2.Store(&ct[(remainder4Pos + i) * 16], tmp0);
+				tmp = Aes.EncryptLast(tmp, Sse2.LoadVector128(&ks[14 * 16]));
+				tmp = Sse2.Xor(tmp, Sse2.LoadVector128(&pt[(remainder4Pos + i) * 16]));
+				Sse2.Store(&ct[(remainder4Pos + i) * 16], tmp);
 			}
 
 			if (remainder16 != 0)
 			{
 				byte* b = stackalloc byte[16];
-
-				var source = new Span<byte>(pt + remainder16Pos, remainder16);
-				var destination = new Span<byte>(b, 16);
-
-				source.CopyTo(destination);
-
-				var tmp0 = ctr;
-				ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(ks));
+				new Span<byte>(pt + remainder16Pos, remainder16).CopyTo(new Span<byte>(b, 16));
+				var tmp = Sse2.Xor(ctr, Sse2.LoadVector128(ks));
 
 				for (int j = 1; j < 14; ++j)
 				{
-					tmp0 = Aes.Encrypt(tmp0, Sse2.LoadVector128(&ks[j * 16]));
+					tmp = Aes.Encrypt(tmp, Sse2.LoadVector128(&ks[j * 16]));
 				}
 
-				tmp0 = Aes.EncryptLast(tmp0, Sse2.LoadVector128(&ks[14 * 16]));
-				Sse2.Store(b, Sse2.Xor(tmp0, Sse2.LoadVector128(b)));
+				tmp = Aes.EncryptLast(tmp, Sse2.LoadVector128(&ks[14 * 16]));
+				Sse2.Store(b, Sse2.Xor(tmp, Sse2.LoadVector128(b)));
 
-				source = new Span<byte>(b, remainder16);
-				destination = new Span<byte>(ct + remainder16Pos, remainder16);
-
-				source.CopyTo(destination);
+				new Span<byte>(b, remainder16).CopyTo(new Span<byte>(ct + remainder16Pos, remainder16));
 			}
 		}
 
@@ -195,45 +185,35 @@ namespace Cryptography
 
 			for (int i = 0; i < remainder8; ++i)
 			{
-				var tmp0 = ctr;
+				var tmp = ctr;
 				ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(ks));
+				tmp = Sse2.Xor(tmp, Sse2.LoadVector128(ks));
 
 				for (int j = 1; j < 14; ++j)
 				{
-					tmp0 = Aes.Encrypt(tmp0, Sse2.LoadVector128(&ks[j * 16]));
+					tmp = Aes.Encrypt(tmp, Sse2.LoadVector128(&ks[j * 16]));
 				}
 
-				tmp0 = Aes.EncryptLast(tmp0, Sse2.LoadVector128(&ks[14 * 16]));
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(&pt[(remainder8Pos + i) * 16]));
-				Sse2.Store(&ct[(remainder8Pos + i) * 16], tmp0);
+				tmp = Aes.EncryptLast(tmp, Sse2.LoadVector128(&ks[14 * 16]));
+				tmp = Sse2.Xor(tmp, Sse2.LoadVector128(&pt[(remainder8Pos + i) * 16]));
+				Sse2.Store(&ct[(remainder8Pos + i) * 16], tmp);
 			}
 
 			if (remainder16 != 0)
 			{
 				byte* b = stackalloc byte[16];
-
-				var source = new Span<byte>(pt + remainder16Pos, remainder16);
-				var destination = new Span<byte>(b, 16);
-
-				source.CopyTo(destination);
-
-				var tmp0 = ctr;
-				ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr), one));
-				tmp0 = Sse2.Xor(tmp0, Sse2.LoadVector128(ks));
+				new Span<byte>(pt + remainder16Pos, remainder16).CopyTo(new Span<byte>(b, 16));
+				var tmp = Sse2.Xor(ctr, Sse2.LoadVector128(ks));
 
 				for (int j = 1; j < 14; ++j)
 				{
-					tmp0 = Aes.Encrypt(tmp0, Sse2.LoadVector128(&ks[j * 16]));
+					tmp = Aes.Encrypt(tmp, Sse2.LoadVector128(&ks[j * 16]));
 				}
 
-				tmp0 = Aes.EncryptLast(tmp0, Sse2.LoadVector128(&ks[14 * 16]));
-				Sse2.Store(b, Sse2.Xor(tmp0, Sse2.LoadVector128(b)));
+				tmp = Aes.EncryptLast(tmp, Sse2.LoadVector128(&ks[14 * 16]));
+				Sse2.Store(b, Sse2.Xor(tmp, Sse2.LoadVector128(b)));
 
-				source = new Span<byte>(b, remainder16);
-				destination = new Span<byte>(ct + remainder16Pos, remainder16);
-
-				source.CopyTo(destination);
+				new Span<byte>(b, remainder16).CopyTo(new Span<byte>(ct + remainder16Pos, remainder16));
 			}
 		}
 	}

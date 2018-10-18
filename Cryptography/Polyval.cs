@@ -68,7 +68,7 @@ namespace Cryptography
 			Sse2.Store(polyval, Sse.StaticCast<ulong, byte>(t));
 		}
 
-		private static void PolyvalPowersTable(byte* polyval, byte* powersTable, byte* input, int length)
+		private static void PolyvalPowersTable(byte* polyval, byte* htbl, byte* input, int length)
 		{
 			if (length == 0)
 			{
@@ -85,14 +85,14 @@ namespace Cryptography
 			var poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
 			var t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(polyval));
 
-			var h0 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTable[0 * 16]));
-			var h1 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTable[1 * 16]));
-			var h2 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTable[2 * 16]));
-			var h3 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTable[3 * 16]));
-			var h4 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTable[4 * 16]));
-			var h5 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTable[5 * 16]));
-			var h6 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTable[6 * 16]));
-			var h7 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTable[7 * 16]));
+			var h0 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&htbl[0 * 16]));
+			var h1 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&htbl[1 * 16]));
+			var h2 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&htbl[2 * 16]));
+			var h3 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&htbl[3 * 16]));
+			var h4 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&htbl[4 * 16]));
+			var h5 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&htbl[5 * 16]));
+			var h6 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&htbl[6 * 16]));
+			var h7 = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&htbl[7 * 16]));
 
 			if (remainder128 != 0)
 			{
@@ -101,7 +101,7 @@ namespace Cryptography
 
 				data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(input));
 				data = Sse2.Xor(t, data);
-				h = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTable[(remainder128Blocks - 1) * 16]));
+				h = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&htbl[(remainder128Blocks - 1) * 16]));
 				tmp2 = Pclmulqdq.CarrylessMultiply(data, h, 0x01);
 				tmp0 = Pclmulqdq.CarrylessMultiply(data, h, 0x00);
 				tmp1 = Pclmulqdq.CarrylessMultiply(data, h, 0x11);
@@ -111,7 +111,7 @@ namespace Cryptography
 				for (int i = 1; i < remainder128Blocks; ++i)
 				{
 					data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&input[i * 16]));
-					h = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&powersTable[(remainder128Blocks - i - 1) * 16]));
+					h = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&htbl[(remainder128Blocks - i - 1) * 16]));
 					tmp3 = Pclmulqdq.CarrylessMultiply(data, h, 0x00);
 					tmp0 = Sse2.Xor(tmp0, tmp3);
 					tmp3 = Pclmulqdq.CarrylessMultiply(data, h, 0x11);
