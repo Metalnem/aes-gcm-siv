@@ -229,11 +229,26 @@ namespace Cryptography
 
 			DeriveKeys(nonce, ks, hashKey, encKey);
 			KeySchedule(encKey, encRoundKeys);
-			Encrypt4(ct, ctLen, pt, tag, encRoundKeys);
 
-			PolyvalHorner(polyval, hashKey, ad, adLen);
-			PolyvalHorner(polyval, hashKey, pt, ctLen);
-			PolyvalHorner(polyval, hashKey, (byte*)lengthBlock, 16);
+			if (ctLen + adLen <= threshold)
+			{
+				Encrypt4(ct, ctLen, pt, tag, encRoundKeys);
+
+				PolyvalHorner(polyval, hashKey, ad, adLen);
+				PolyvalHorner(polyval, hashKey, pt, ctLen);
+				PolyvalHorner(polyval, hashKey, (byte*)lengthBlock, 16);
+			}
+			else
+			{
+				Encrypt8(ct, ctLen, pt, tag, encRoundKeys);
+
+				byte* powersTable = stackalloc byte[8 * 16];
+				InitPowersTable(powersTable, 8, hashKey);
+
+				PolyvalPowersTable(polyval, powersTable, ad, adLen);
+				PolyvalPowersTable(polyval, powersTable, pt, ctLen);
+				PolyvalPowersTable(polyval, powersTable, (byte*)lengthBlock, 16);
+			}
 
 			var t = Sse2.LoadVector128(polyval);
 			Sse2.Store(polyval, Sse2.And(Sse2.Xor(t, xorMask), andMask));
