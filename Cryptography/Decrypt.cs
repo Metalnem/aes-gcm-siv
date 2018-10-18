@@ -7,6 +7,10 @@ namespace Cryptography
 {
 	public unsafe partial class AesGcmSiv
 	{
+		// DecryptPowersTable decrypts ctLen bytes from ct and writes them to pt. While
+		// decrypting, it updates the POLYVAL value in polyval. In order to decrypt and
+		// update the POLYVAL value, it uses the expanded key from ks and the table of
+		// powers in htbl. Decryption processes 6 blocks of data in parallel.
 		private static void DecryptPowersTable(byte* ct, int ctLen, byte* pt, byte* polyval, byte* htbl, byte* tag, byte* ks)
 		{
 			Vector128<byte> key;
