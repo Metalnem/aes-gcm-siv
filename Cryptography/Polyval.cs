@@ -6,6 +6,9 @@ namespace Cryptography
 {
 	public unsafe partial class AesGcmSiv
 	{
+		// PolyvalHorner updates the POLYVAL value in polyval to include length bytes
+		// of data from input, given the POLYVAL key in hashKey. If the length is not
+		// divisible by 16, input is padded with zeros until it's a multiple of 16 bytes.
 		private static void PolyvalHorner(byte* polyval, byte* hashKey, byte* input, int length)
 		{
 			if (length == 0)
@@ -32,6 +35,7 @@ namespace Cryptography
 				tmp2 = Sse2.ShiftRightLogical128BitLane(tmp2, 8);
 				tmp1 = Sse2.Xor(tmp3, tmp1);
 				tmp4 = Sse2.Xor(tmp4, tmp2);
+
 				tmp2 = Pclmulqdq.CarrylessMultiply(tmp1, poly, 0x10);
 				tmp3 = Sse.StaticCast<uint, ulong>(Sse2.Shuffle(Sse.StaticCast<ulong, uint>(tmp1), 78));
 				tmp1 = Sse2.Xor(tmp3, tmp2);
@@ -56,6 +60,7 @@ namespace Cryptography
 				tmp2 = Sse2.ShiftRightLogical128BitLane(tmp2, 8);
 				tmp1 = Sse2.Xor(tmp3, tmp1);
 				tmp4 = Sse2.Xor(tmp4, tmp2);
+
 				tmp2 = Pclmulqdq.CarrylessMultiply(tmp1, poly, 0x10);
 				tmp3 = Sse.StaticCast<uint, ulong>(Sse2.Shuffle(Sse.StaticCast<ulong, uint>(tmp1), 78));
 				tmp1 = Sse2.Xor(tmp3, tmp2);
@@ -68,6 +73,10 @@ namespace Cryptography
 			Sse2.Store(polyval, Sse.StaticCast<ulong, byte>(t));
 		}
 
+		// PolyvalPowersTable updates the POLYVAL value in polyval to include length bytes
+		// of data from input, given the POLYVAL key in hashKey. It uses the precomputed
+		// powers of the key given in htbl. If the length is not divisible by 16, input
+		// is padded with zeros until it's a multiple of 16 bytes.
 		private static void PolyvalPowersTable(byte* polyval, byte* htbl, byte* input, int length)
 		{
 			if (length == 0)
@@ -78,7 +87,7 @@ namespace Cryptography
 			int blocks = Math.DivRem(length, 16, out int remainder16);
 			int remainder128 = length % 128 - remainder16;
 
-			Vector128<ulong> data, h, tmp0, tmp1, tmp2, tmp3, tmp4;
+			Vector128<ulong> tmp0, tmp1, tmp2, tmp3, tmp4, data, h;
 			Vector128<sbyte> tb;
 
 			var xhi = Sse2.SetZeroVector128<ulong>();
