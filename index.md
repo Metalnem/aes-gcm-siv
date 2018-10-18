@@ -2,11 +2,16 @@
 title: Noise.NET
 ---
 
-# AES-GCM-SIV [![license][license-shield]][license-link]
+# AES-GCM-SIV
+
+[![docs][docs-shield]][docs-link]
+[![license][license-shield]][license-link]
 
 C# implementation of [AES-GCM-SIV] nonce misuse-resistant authenticated encryption,
 defined in [draft-irtf-cfrg-gcmsiv-08].
 
+[docs-shield]: https://img.shields.io/badge/docs-API-orange.svg?style=flat
+[docs-shield]: https://metalnem.github.io/aes-gcm-siv/api/Cryptography.html
 [license-shield]: https://img.shields.io/badge/license-MIT-blue.svg?style=flat
 [license-link]: https://github.com/metalnem/aes-gcm-siv/blob/master/LICENSE
 [AES-GCM-SIV]: https://eprint.iacr.org/2017/168.pdf
