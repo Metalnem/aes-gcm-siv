@@ -1,0 +1,702 @@
+﻿<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+  
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Class AesGcmSiv
+   </title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="title" content="Class AesGcmSiv
+   ">
+    <meta name="generator" content="docfx 2.38.1.0">
+    
+    <link rel="shortcut icon" href="../favicon.ico">
+    <link rel="stylesheet" href="../styles/docfx.vendor.css">
+    <link rel="stylesheet" href="../styles/docfx.css">
+    <link rel="stylesheet" href="../styles/main.css">
+    <meta property="docfx:navrel" content="../toc">
+    <meta property="docfx:tocrel" content="toc">
+    
+    
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+        
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              
+              <a class="navbar-brand" href="../index.html">
+                <img id="logo" class="svg" src="../logo.svg" alt="">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+                <ul class="nav level1 navbar-nav">
+                  <li class="active">
+                    <a href="../api/Cryptography.html" title="API Reference" class="active">API Reference</a>
+                  </li>
+                </ul>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="sidenav hide-when-search">
+          <a class="btn toc-toggle collapse" data-toggle="collapse" href="#sidetoggle" aria-expanded="false" aria-controls="sidetoggle">Show / Hide Table of Contents</a>
+          <div class="sidetoggle collapse" id="sidetoggle">
+            <div>
+              <div class="sidefilter">
+                <form class="toc-filter">
+                  <span class="glyphicon glyphicon-filter filter-icon"></span>
+                  <input type="text" id="toc_filter_input" placeholder="Enter here to filter..." onkeypress="if(event.keyCode==13) {return false;}">
+                </form>
+              </div>
+              <div class="sidetoc">
+                <div class="toc" id="toc">
+                  
+                  <ul class="nav level1">
+                    <li class="">
+                      <span class="expand-stub"></span>
+                      <a href="Cryptography.html" title="Cryptography" class="">Cryptography</a>
+                        
+                        <ul class="nav level2">
+                          <li class="active">
+                            <a href="Cryptography.AesGcmSiv.html" title="AesGcmSiv" class="active">AesGcmSiv</a>
+                          </li>
+                        </ul>  </li>
+                  </ul>        </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="article row grid-right">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="Cryptography.AesGcmSiv">
+  
+  
+  <h1 id="Cryptography_AesGcmSiv" data-uid="Cryptography.AesGcmSiv" class="text-break">Class AesGcmSiv
+  </h1>
+  <div class="markdown level0 summary"><p>AES-256-GCM-SIV nonce misuse-resistant authenticated encryption mode, defined in
+<a href="https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08">draft-irtf-cfrg-gcmsiv-08</a>.</p>
+</div>
+  <div class="markdown level0 conceptual"></div>
+  <div class="inheritance">
+    <h5>Inheritance</h5>
+    <div class="level0"><span class="xref">System.Object</span></div>
+    <div class="level1"><span class="xref">AesGcmSiv</span></div>
+  </div>
+  <div classs="implements">
+    <h5>Implements</h5>
+    <div><span class="xref">System.IDisposable</span></div>
+  </div>
+  <div class="inheritedMembers">
+    <h5>Inherited Members</h5>
+    <div>
+      <span class="xref">System.Object.Equals(System.Object)</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.Equals(System.Object, System.Object)</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.GetHashCode()</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.GetType()</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.MemberwiseClone()</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.ReferenceEquals(System.Object, System.Object)</span>
+    </div>
+    <div>
+      <span class="xref">System.Object.ToString()</span>
+    </div>
+  </div>
+  <h6><strong>Namespace</strong>: <a class="xref" href="Cryptography.html">Cryptography</a></h6>
+  <h6><strong>Assembly</strong>: Cryptography.dll</h6>
+  <h5 id="Cryptography_AesGcmSiv_syntax">Syntax</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public sealed class AesGcmSiv : IDisposable</code></pre>
+  </div>
+  <h3 id="constructors">Constructors
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/Metalnem/aes-gcm-siv/new/master/apiSpec/new?filename=Cryptography_AesGcmSiv__ctor_System_Byte___.md&amp;value=---%0Auid%3A%20Cryptography.AesGcmSiv.%23ctor(System.Byte%5B%5D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/Metalnem/aes-gcm-siv/blob/master/src/Cryptography/AesGcmSiv.cs/#L47">View Source</a>
+  </span>
+  <a id="Cryptography_AesGcmSiv__ctor_" data-uid="Cryptography.AesGcmSiv.#ctor*"></a>
+  <h4 id="Cryptography_AesGcmSiv__ctor_System_Byte___" data-uid="Cryptography.AesGcmSiv.#ctor(System.Byte[])">AesGcmSiv(Byte[])</h4>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Cryptography.AesGcmSiv.html">AesGcmSiv</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AesGcmSiv(byte[] key)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="parametername">key</span></td>
+        <td><p>The secret key for AES-256-GCM-SIV encryption.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="exceptions">Exceptions</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Condition</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.ArgumentNullException</span></td>
+        <td><p>Thrown if the <code data-dev-comment-type="paramref" class="paramref">key</code> is null.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.PlatformNotSupportedException</span></td>
+        <td><p>Thrown if the CPU doesn't implement AES and CLMUL instruction sets.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Security.Cryptography.CryptographicException</span></td>
+        <td><p>Thrown if the <code data-dev-comment-type="paramref" class="paramref">key</code> is not 32 bytes in length.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/Metalnem/aes-gcm-siv/new/master/apiSpec/new?filename=Cryptography_AesGcmSiv__ctor_System_ReadOnlySpan_System_Byte__.md&amp;value=---%0Auid%3A%20Cryptography.AesGcmSiv.%23ctor(System.ReadOnlySpan%7BSystem.Byte%7D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/Metalnem/aes-gcm-siv/blob/master/src/Cryptography/AesGcmSiv.cs/#L62">View Source</a>
+  </span>
+  <a id="Cryptography_AesGcmSiv__ctor_" data-uid="Cryptography.AesGcmSiv.#ctor*"></a>
+  <h4 id="Cryptography_AesGcmSiv__ctor_System_ReadOnlySpan_System_Byte__" data-uid="Cryptography.AesGcmSiv.#ctor(System.ReadOnlySpan{System.Byte})">AesGcmSiv(ReadOnlySpan&lt;Byte&gt;)</h4>
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="Cryptography.AesGcmSiv.html">AesGcmSiv</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AesGcmSiv(ReadOnlySpan&lt;byte&gt; key)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.ReadOnlySpan</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
+        <td><span class="parametername">key</span></td>
+        <td><p>The secret key for AES-256-GCM-SIV encryption.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="exceptions">Exceptions</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Condition</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.PlatformNotSupportedException</span></td>
+        <td><p>Thrown if the CPU doesn't support AES and CLMUL instruction sets.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Security.Cryptography.CryptographicException</span></td>
+        <td><p>Thrown if the <code data-dev-comment-type="paramref" class="paramref">key</code> is not 32 bytes in length.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="properties">Properties
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/Metalnem/aes-gcm-siv/new/master/apiSpec/new?filename=Cryptography_AesGcmSiv_IsSupported.md&amp;value=---%0Auid%3A%20Cryptography.AesGcmSiv.IsSupported%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/Metalnem/aes-gcm-siv/blob/master/src/Cryptography/AesGcmSiv.cs/#L86">View Source</a>
+  </span>
+  <a id="Cryptography_AesGcmSiv_IsSupported_" data-uid="Cryptography.AesGcmSiv.IsSupported*"></a>
+  <h4 id="Cryptography_AesGcmSiv_IsSupported" data-uid="Cryptography.AesGcmSiv.IsSupported">IsSupported</h4>
+  <div class="markdown level1 summary"><p>Returns true if the CPU supports AES and CLMUL instruction sets, false otherwise.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static bool IsSupported { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Boolean</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="methods">Methods
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/Metalnem/aes-gcm-siv/new/master/apiSpec/new?filename=Cryptography_AesGcmSiv_Decrypt_System_Byte___System_Byte___System_Byte___System_Byte___System_Byte___.md&amp;value=---%0Auid%3A%20Cryptography.AesGcmSiv.Decrypt(System.Byte%5B%5D%2CSystem.Byte%5B%5D%2CSystem.Byte%5B%5D%2CSystem.Byte%5B%5D%2CSystem.Byte%5B%5D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/Metalnem/aes-gcm-siv/blob/master/src/Cryptography/AesGcmSiv.cs/#L247">View Source</a>
+  </span>
+  <a id="Cryptography_AesGcmSiv_Decrypt_" data-uid="Cryptography.AesGcmSiv.Decrypt*"></a>
+  <h4 id="Cryptography_AesGcmSiv_Decrypt_System_Byte___System_Byte___System_Byte___System_Byte___System_Byte___" data-uid="Cryptography.AesGcmSiv.Decrypt(System.Byte[],System.Byte[],System.Byte[],System.Byte[],System.Byte[])">Decrypt(Byte[], Byte[], Byte[], Byte[], Byte[])</h4>
+  <div class="markdown level1 summary"><p>Decrypt decrypts the ciphertext, and authenticates the
+decrypted plaintext and the optional associated data.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Decrypt(byte[] nonce, byte[] ciphertext, byte[] tag, byte[] plaintext, byte[] associatedData = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="parametername">nonce</span></td>
+        <td><p>The 12-byte nonce that was previously used for encryption.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="parametername">ciphertext</span></td>
+        <td><p>The ciphertext to decrypt.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="parametername">tag</span></td>
+        <td><p>The 16-byte authentication tag.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="parametername">plaintext</span></td>
+        <td><p>The buffer for the plaintext. It must be the same length as the ciphertext.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="parametername">associatedData</span></td>
+        <td><p>Associated data to authenticate. Can be null.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="exceptions">Exceptions</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Condition</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.ObjectDisposedException</span></td>
+        <td><p>Thrown if the current instance has already been disposed.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.ArgumentNullException</span></td>
+        <td><p>Thrown if either <code data-dev-comment-type="paramref" class="paramref">nonce</code>, <code data-dev-comment-type="paramref" class="paramref">plaintext</code>,
+<code data-dev-comment-type="paramref" class="paramref">ciphertext</code>, or <code data-dev-comment-type="paramref" class="paramref">tag</code> is null.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.ArgumentException</span></td>
+        <td><p>Thrown if any of the following conditions is satisfied:</p>
+<p>- <code data-dev-comment-type="paramref" class="paramref">plaintext</code> and <code data-dev-comment-type="paramref" class="paramref">ciphertext</code> are not the same length.</p>
+<p>- <code data-dev-comment-type="paramref" class="paramref">nonce</code> is not 12 bytes in length.</p>
+<p>- <code data-dev-comment-type="paramref" class="paramref">tag</code> is not 16 bytes in length.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/Metalnem/aes-gcm-siv/new/master/apiSpec/new?filename=Cryptography_AesGcmSiv_Decrypt_System_ReadOnlySpan_System_Byte__System_ReadOnlySpan_System_Byte__System_ReadOnlySpan_System_Byte__System_Span_System_Byte__System_ReadOnlySpan_System_Byte__.md&amp;value=---%0Auid%3A%20Cryptography.AesGcmSiv.Decrypt(System.ReadOnlySpan%7BSystem.Byte%7D%2CSystem.ReadOnlySpan%7BSystem.Byte%7D%2CSystem.ReadOnlySpan%7BSystem.Byte%7D%2CSystem.Span%7BSystem.Byte%7D%2CSystem.ReadOnlySpan%7BSystem.Byte%7D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/Metalnem/aes-gcm-siv/blob/master/src/Cryptography/AesGcmSiv.cs/#L296">View Source</a>
+  </span>
+  <a id="Cryptography_AesGcmSiv_Decrypt_" data-uid="Cryptography.AesGcmSiv.Decrypt*"></a>
+  <h4 id="Cryptography_AesGcmSiv_Decrypt_System_ReadOnlySpan_System_Byte__System_ReadOnlySpan_System_Byte__System_ReadOnlySpan_System_Byte__System_Span_System_Byte__System_ReadOnlySpan_System_Byte__" data-uid="Cryptography.AesGcmSiv.Decrypt(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.ReadOnlySpan{System.Byte})">Decrypt(ReadOnlySpan&lt;Byte&gt;, ReadOnlySpan&lt;Byte&gt;, ReadOnlySpan&lt;Byte&gt;, Span&lt;Byte&gt;, ReadOnlySpan&lt;Byte&gt;)</h4>
+  <div class="markdown level1 summary"><p>Decrypt decrypts the ciphertext, and authenticates the
+decrypted plaintext and the optional associated data.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Decrypt(ReadOnlySpan&lt;byte&gt; nonce, ReadOnlySpan&lt;byte&gt; ciphertext, ReadOnlySpan&lt;byte&gt; tag, Span&lt;byte&gt; plaintext, ReadOnlySpan&lt;byte&gt; associatedData)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.ReadOnlySpan</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
+        <td><span class="parametername">nonce</span></td>
+        <td><p>The 12-byte nonce that was previously used for encryption.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.ReadOnlySpan</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
+        <td><span class="parametername">ciphertext</span></td>
+        <td><p>The ciphertext to decrypt.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.ReadOnlySpan</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
+        <td><span class="parametername">tag</span></td>
+        <td><p>The 16-byte authentication tag.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Span</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
+        <td><span class="parametername">plaintext</span></td>
+        <td><p>The buffer for the plaintext. It must be the same length as the ciphertext.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.ReadOnlySpan</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
+        <td><span class="parametername">associatedData</span></td>
+        <td><p>Associated data to authenticate. Can be null.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="exceptions">Exceptions</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Condition</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.ObjectDisposedException</span></td>
+        <td><p>Thrown if the current instance has already been disposed.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.ArgumentException</span></td>
+        <td><p>Thrown if any of the following conditions is satisfied:</p>
+<p>- <code data-dev-comment-type="paramref" class="paramref">plaintext</code> and <code data-dev-comment-type="paramref" class="paramref">ciphertext</code> are not the same length.</p>
+<p>- <code data-dev-comment-type="paramref" class="paramref">nonce</code> is not 12 bytes in length.</p>
+<p>- <code data-dev-comment-type="paramref" class="paramref">tag</code> is not 16 bytes in length.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/Metalnem/aes-gcm-siv/new/master/apiSpec/new?filename=Cryptography_AesGcmSiv_Dispose.md&amp;value=---%0Auid%3A%20Cryptography.AesGcmSiv.Dispose%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/Metalnem/aes-gcm-siv/blob/master/src/Cryptography/AesGcmSiv.cs/#L586">View Source</a>
+  </span>
+  <a id="Cryptography_AesGcmSiv_Dispose_" data-uid="Cryptography.AesGcmSiv.Dispose*"></a>
+  <h4 id="Cryptography_AesGcmSiv_Dispose" data-uid="Cryptography.AesGcmSiv.Dispose">Dispose()</h4>
+  <div class="markdown level1 summary"><p>Disposes this object.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Dispose()</code></pre>
+  </div>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/Metalnem/aes-gcm-siv/new/master/apiSpec/new?filename=Cryptography_AesGcmSiv_Encrypt_System_Byte___System_Byte___System_Byte___System_Byte___System_Byte___.md&amp;value=---%0Auid%3A%20Cryptography.AesGcmSiv.Encrypt(System.Byte%5B%5D%2CSystem.Byte%5B%5D%2CSystem.Byte%5B%5D%2CSystem.Byte%5B%5D%2CSystem.Byte%5B%5D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/Metalnem/aes-gcm-siv/blob/master/src/Cryptography/AesGcmSiv.cs/#L110">View Source</a>
+  </span>
+  <a id="Cryptography_AesGcmSiv_Encrypt_" data-uid="Cryptography.AesGcmSiv.Encrypt*"></a>
+  <h4 id="Cryptography_AesGcmSiv_Encrypt_System_Byte___System_Byte___System_Byte___System_Byte___System_Byte___" data-uid="Cryptography.AesGcmSiv.Encrypt(System.Byte[],System.Byte[],System.Byte[],System.Byte[],System.Byte[])">Encrypt(Byte[], Byte[], Byte[], Byte[], Byte[])</h4>
+  <div class="markdown level1 summary"><p>Encrypt encrypts and authenticates the plaintext,
+and authenticates the optional associated data.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Encrypt(byte[] nonce, byte[] plaintext, byte[] ciphertext, byte[] tag, byte[] associatedData = null)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="parametername">nonce</span></td>
+        <td><p>The 12-byte nonce. It is recommended to use randomnly chosen nonces.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="parametername">plaintext</span></td>
+        <td><p>The plaintext to encrypt.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="parametername">ciphertext</span></td>
+        <td><p>The buffer for the ciphertext. It must be the same length as the plaintext.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="parametername">tag</span></td>
+        <td><p>The 16-byte buffer for the authentication tag.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Byte</span>[]</td>
+        <td><span class="parametername">associatedData</span></td>
+        <td><p>Associated data to authenticate. Can be null.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="exceptions">Exceptions</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Condition</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.ObjectDisposedException</span></td>
+        <td><p>Thrown if the current instance has already been disposed.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.ArgumentNullException</span></td>
+        <td><p>Thrown if either <code data-dev-comment-type="paramref" class="paramref">nonce</code>, <code data-dev-comment-type="paramref" class="paramref">plaintext</code>,
+<code data-dev-comment-type="paramref" class="paramref">ciphertext</code>, or <code data-dev-comment-type="paramref" class="paramref">tag</code> is null.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.ArgumentException</span></td>
+        <td><p>Thrown if any of the following conditions is satisfied:</p>
+<p>- <code data-dev-comment-type="paramref" class="paramref">plaintext</code> and <code data-dev-comment-type="paramref" class="paramref">ciphertext</code> are not the same length.</p>
+<p>- <code data-dev-comment-type="paramref" class="paramref">nonce</code> is not 12 bytes in length.</p>
+<p>- <code data-dev-comment-type="paramref" class="paramref">tag</code> is not 16 bytes in length.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/Metalnem/aes-gcm-siv/new/master/apiSpec/new?filename=Cryptography_AesGcmSiv_Encrypt_System_ReadOnlySpan_System_Byte__System_ReadOnlySpan_System_Byte__System_Span_System_Byte__System_Span_System_Byte__System_ReadOnlySpan_System_Byte__.md&amp;value=---%0Auid%3A%20Cryptography.AesGcmSiv.Encrypt(System.ReadOnlySpan%7BSystem.Byte%7D%2CSystem.ReadOnlySpan%7BSystem.Byte%7D%2CSystem.Span%7BSystem.Byte%7D%2CSystem.Span%7BSystem.Byte%7D%2CSystem.ReadOnlySpan%7BSystem.Byte%7D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/Metalnem/aes-gcm-siv/blob/master/src/Cryptography/AesGcmSiv.cs/#L159">View Source</a>
+  </span>
+  <a id="Cryptography_AesGcmSiv_Encrypt_" data-uid="Cryptography.AesGcmSiv.Encrypt*"></a>
+  <h4 id="Cryptography_AesGcmSiv_Encrypt_System_ReadOnlySpan_System_Byte__System_ReadOnlySpan_System_Byte__System_Span_System_Byte__System_Span_System_Byte__System_ReadOnlySpan_System_Byte__" data-uid="Cryptography.AesGcmSiv.Encrypt(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Span{System.Byte},System.ReadOnlySpan{System.Byte})">Encrypt(ReadOnlySpan&lt;Byte&gt;, ReadOnlySpan&lt;Byte&gt;, Span&lt;Byte&gt;, Span&lt;Byte&gt;, ReadOnlySpan&lt;Byte&gt;)</h4>
+  <div class="markdown level1 summary"><p>Encrypt encrypts and authenticates the plaintext,
+and authenticates the optional associated data.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public void Encrypt(ReadOnlySpan&lt;byte&gt; nonce, ReadOnlySpan&lt;byte&gt; plaintext, Span&lt;byte&gt; ciphertext, Span&lt;byte&gt; tag, ReadOnlySpan&lt;byte&gt; associatedData)</code></pre>
+  </div>
+  <h5 class="parameters">Parameters</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Name</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.ReadOnlySpan</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
+        <td><span class="parametername">nonce</span></td>
+        <td><p>The 12-byte nonce. It is recommended to use randomnly chosen nonces.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.ReadOnlySpan</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
+        <td><span class="parametername">plaintext</span></td>
+        <td><p>The plaintext to encrypt.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Span</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
+        <td><span class="parametername">ciphertext</span></td>
+        <td><p>The buffer for the ciphertext. It must be the same length as the plaintext.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.Span</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
+        <td><span class="parametername">tag</span></td>
+        <td><p>The 16-byte buffer for the authentication tag.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.ReadOnlySpan</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
+        <td><span class="parametername">associatedData</span></td>
+        <td><p>Associated data to authenticate. Can be null.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h5 class="exceptions">Exceptions</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Condition</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">System.ObjectDisposedException</span></td>
+        <td><p>Thrown if the current instance has already been disposed.</p>
+</td>
+      </tr>
+      <tr>
+        <td><span class="xref">System.ArgumentException</span></td>
+        <td><p>Thrown if any of the following conditions is satisfied:</p>
+<p>- <code data-dev-comment-type="paramref" class="paramref">plaintext</code> and <code data-dev-comment-type="paramref" class="paramref">ciphertext</code> are not the same length.</p>
+<p>- <code data-dev-comment-type="paramref" class="paramref">nonce</code> is not 12 bytes in length.</p>
+<p>- <code data-dev-comment-type="paramref" class="paramref">tag</code> is not 16 bytes in length.</p>
+</td>
+      </tr>
+    </tbody>
+  </table>
+  <h3 id="implements">Implements</h3>
+  <div>
+      <span class="xref">System.IDisposable</span>
+  </div>
+</article>
+          </div>
+          
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/Metalnem/aes-gcm-siv/new/master/apiSpec/new?filename=Cryptography_AesGcmSiv.md&amp;value=---%0Auid%3A%20Cryptography.AesGcmSiv%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
+                  </li>
+                  <li>
+                    <a href="https://github.com/Metalnem/aes-gcm-siv/blob/master/src/Cryptography/Polyval.cs/#L7" class="contribution-link">View Source</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+              <!-- <p><a class="back-to-top" href="#top">Back to top</a><p> -->
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+            
+            <span>Generated by <strong>DocFX</strong></span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    
+    <script type="text/javascript" src="../styles/docfx.vendor.js"></script>
+    <script type="text/javascript" src="../styles/docfx.js"></script>
+    <script type="text/javascript" src="../styles/main.js"></script>
+  </body>
+</html>

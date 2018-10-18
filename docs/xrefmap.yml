@@ -1,0 +1,116 @@
+### YamlMime:XRefMap
+sorted: true
+references:
+- uid: Cryptography
+  name: Cryptography
+  href: api/Cryptography.html
+  commentId: N:Cryptography
+  fullName: Cryptography
+  nameWithType: Cryptography
+- uid: Cryptography.AesGcmSiv
+  name: AesGcmSiv
+  href: api/Cryptography.AesGcmSiv.html
+  commentId: T:Cryptography.AesGcmSiv
+  fullName: Cryptography.AesGcmSiv
+  nameWithType: AesGcmSiv
+- uid: Cryptography.AesGcmSiv.#ctor(System.Byte[])
+  name: AesGcmSiv(Byte[])
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv__ctor_System_Byte___
+  commentId: M:Cryptography.AesGcmSiv.#ctor(System.Byte[])
+  name.vb: AesGcmSiv(Byte())
+  fullName: Cryptography.AesGcmSiv.AesGcmSiv(System.Byte[])
+  fullName.vb: Cryptography.AesGcmSiv.AesGcmSiv(System.Byte())
+  nameWithType: AesGcmSiv.AesGcmSiv(Byte[])
+  nameWithType.vb: AesGcmSiv.AesGcmSiv(Byte())
+- uid: Cryptography.AesGcmSiv.#ctor(System.ReadOnlySpan{System.Byte})
+  name: AesGcmSiv(ReadOnlySpan<Byte>)
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv__ctor_System_ReadOnlySpan_System_Byte__
+  commentId: M:Cryptography.AesGcmSiv.#ctor(System.ReadOnlySpan{System.Byte})
+  name.vb: AesGcmSiv(ReadOnlySpan(Of Byte))
+  fullName: Cryptography.AesGcmSiv.AesGcmSiv(System.ReadOnlySpan<System.Byte>)
+  fullName.vb: Cryptography.AesGcmSiv.AesGcmSiv(System.ReadOnlySpan(Of System.Byte))
+  nameWithType: AesGcmSiv.AesGcmSiv(ReadOnlySpan<Byte>)
+  nameWithType.vb: AesGcmSiv.AesGcmSiv(ReadOnlySpan(Of Byte))
+- uid: Cryptography.AesGcmSiv.#ctor*
+  name: AesGcmSiv
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv__ctor_
+  commentId: Overload:Cryptography.AesGcmSiv.#ctor
+  isSpec: "True"
+  fullName: Cryptography.AesGcmSiv.AesGcmSiv
+  nameWithType: AesGcmSiv.AesGcmSiv
+- uid: Cryptography.AesGcmSiv.Decrypt(System.Byte[],System.Byte[],System.Byte[],System.Byte[],System.Byte[])
+  name: Decrypt(Byte[], Byte[], Byte[], Byte[], Byte[])
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv_Decrypt_System_Byte___System_Byte___System_Byte___System_Byte___System_Byte___
+  commentId: M:Cryptography.AesGcmSiv.Decrypt(System.Byte[],System.Byte[],System.Byte[],System.Byte[],System.Byte[])
+  name.vb: Decrypt(Byte(), Byte(), Byte(), Byte(), Byte())
+  fullName: Cryptography.AesGcmSiv.Decrypt(System.Byte[], System.Byte[], System.Byte[], System.Byte[], System.Byte[])
+  fullName.vb: Cryptography.AesGcmSiv.Decrypt(System.Byte(), System.Byte(), System.Byte(), System.Byte(), System.Byte())
+  nameWithType: AesGcmSiv.Decrypt(Byte[], Byte[], Byte[], Byte[], Byte[])
+  nameWithType.vb: AesGcmSiv.Decrypt(Byte(), Byte(), Byte(), Byte(), Byte())
+- uid: Cryptography.AesGcmSiv.Decrypt(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.ReadOnlySpan{System.Byte})
+  name: Decrypt(ReadOnlySpan<Byte>, ReadOnlySpan<Byte>, ReadOnlySpan<Byte>, Span<Byte>, ReadOnlySpan<Byte>)
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv_Decrypt_System_ReadOnlySpan_System_Byte__System_ReadOnlySpan_System_Byte__System_ReadOnlySpan_System_Byte__System_Span_System_Byte__System_ReadOnlySpan_System_Byte__
+  commentId: M:Cryptography.AesGcmSiv.Decrypt(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.ReadOnlySpan{System.Byte})
+  name.vb: Decrypt(ReadOnlySpan(Of Byte), ReadOnlySpan(Of Byte), ReadOnlySpan(Of Byte), Span(Of Byte), ReadOnlySpan(Of Byte))
+  fullName: Cryptography.AesGcmSiv.Decrypt(System.ReadOnlySpan<System.Byte>, System.ReadOnlySpan<System.Byte>, System.ReadOnlySpan<System.Byte>, System.Span<System.Byte>, System.ReadOnlySpan<System.Byte>)
+  fullName.vb: Cryptography.AesGcmSiv.Decrypt(System.ReadOnlySpan(Of System.Byte), System.ReadOnlySpan(Of System.Byte), System.ReadOnlySpan(Of System.Byte), System.Span(Of System.Byte), System.ReadOnlySpan(Of System.Byte))
+  nameWithType: AesGcmSiv.Decrypt(ReadOnlySpan<Byte>, ReadOnlySpan<Byte>, ReadOnlySpan<Byte>, Span<Byte>, ReadOnlySpan<Byte>)
+  nameWithType.vb: AesGcmSiv.Decrypt(ReadOnlySpan(Of Byte), ReadOnlySpan(Of Byte), ReadOnlySpan(Of Byte), Span(Of Byte), ReadOnlySpan(Of Byte))
+- uid: Cryptography.AesGcmSiv.Decrypt*
+  name: Decrypt
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv_Decrypt_
+  commentId: Overload:Cryptography.AesGcmSiv.Decrypt
+  isSpec: "True"
+  fullName: Cryptography.AesGcmSiv.Decrypt
+  nameWithType: AesGcmSiv.Decrypt
+- uid: Cryptography.AesGcmSiv.Dispose
+  name: Dispose()
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv_Dispose
+  commentId: M:Cryptography.AesGcmSiv.Dispose
+  fullName: Cryptography.AesGcmSiv.Dispose()
+  nameWithType: AesGcmSiv.Dispose()
+- uid: Cryptography.AesGcmSiv.Dispose*
+  name: Dispose
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv_Dispose_
+  commentId: Overload:Cryptography.AesGcmSiv.Dispose
+  isSpec: "True"
+  fullName: Cryptography.AesGcmSiv.Dispose
+  nameWithType: AesGcmSiv.Dispose
+- uid: Cryptography.AesGcmSiv.Encrypt(System.Byte[],System.Byte[],System.Byte[],System.Byte[],System.Byte[])
+  name: Encrypt(Byte[], Byte[], Byte[], Byte[], Byte[])
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv_Encrypt_System_Byte___System_Byte___System_Byte___System_Byte___System_Byte___
+  commentId: M:Cryptography.AesGcmSiv.Encrypt(System.Byte[],System.Byte[],System.Byte[],System.Byte[],System.Byte[])
+  name.vb: Encrypt(Byte(), Byte(), Byte(), Byte(), Byte())
+  fullName: Cryptography.AesGcmSiv.Encrypt(System.Byte[], System.Byte[], System.Byte[], System.Byte[], System.Byte[])
+  fullName.vb: Cryptography.AesGcmSiv.Encrypt(System.Byte(), System.Byte(), System.Byte(), System.Byte(), System.Byte())
+  nameWithType: AesGcmSiv.Encrypt(Byte[], Byte[], Byte[], Byte[], Byte[])
+  nameWithType.vb: AesGcmSiv.Encrypt(Byte(), Byte(), Byte(), Byte(), Byte())
+- uid: Cryptography.AesGcmSiv.Encrypt(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Span{System.Byte},System.ReadOnlySpan{System.Byte})
+  name: Encrypt(ReadOnlySpan<Byte>, ReadOnlySpan<Byte>, Span<Byte>, Span<Byte>, ReadOnlySpan<Byte>)
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv_Encrypt_System_ReadOnlySpan_System_Byte__System_ReadOnlySpan_System_Byte__System_Span_System_Byte__System_Span_System_Byte__System_ReadOnlySpan_System_Byte__
+  commentId: M:Cryptography.AesGcmSiv.Encrypt(System.ReadOnlySpan{System.Byte},System.ReadOnlySpan{System.Byte},System.Span{System.Byte},System.Span{System.Byte},System.ReadOnlySpan{System.Byte})
+  name.vb: Encrypt(ReadOnlySpan(Of Byte), ReadOnlySpan(Of Byte), Span(Of Byte), Span(Of Byte), ReadOnlySpan(Of Byte))
+  fullName: Cryptography.AesGcmSiv.Encrypt(System.ReadOnlySpan<System.Byte>, System.ReadOnlySpan<System.Byte>, System.Span<System.Byte>, System.Span<System.Byte>, System.ReadOnlySpan<System.Byte>)
+  fullName.vb: Cryptography.AesGcmSiv.Encrypt(System.ReadOnlySpan(Of System.Byte), System.ReadOnlySpan(Of System.Byte), System.Span(Of System.Byte), System.Span(Of System.Byte), System.ReadOnlySpan(Of System.Byte))
+  nameWithType: AesGcmSiv.Encrypt(ReadOnlySpan<Byte>, ReadOnlySpan<Byte>, Span<Byte>, Span<Byte>, ReadOnlySpan<Byte>)
+  nameWithType.vb: AesGcmSiv.Encrypt(ReadOnlySpan(Of Byte), ReadOnlySpan(Of Byte), Span(Of Byte), Span(Of Byte), ReadOnlySpan(Of Byte))
+- uid: Cryptography.AesGcmSiv.Encrypt*
+  name: Encrypt
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv_Encrypt_
+  commentId: Overload:Cryptography.AesGcmSiv.Encrypt
+  isSpec: "True"
+  fullName: Cryptography.AesGcmSiv.Encrypt
+  nameWithType: AesGcmSiv.Encrypt
+- uid: Cryptography.AesGcmSiv.IsSupported
+  name: IsSupported
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv_IsSupported
+  commentId: P:Cryptography.AesGcmSiv.IsSupported
+  fullName: Cryptography.AesGcmSiv.IsSupported
+  nameWithType: AesGcmSiv.IsSupported
+- uid: Cryptography.AesGcmSiv.IsSupported*
+  name: IsSupported
+  href: api/Cryptography.AesGcmSiv.html#Cryptography_AesGcmSiv_IsSupported_
+  commentId: Overload:Cryptography.AesGcmSiv.IsSupported
+  isSpec: "True"
+  fullName: Cryptography.AesGcmSiv.IsSupported
+  nameWithType: AesGcmSiv.IsSupported

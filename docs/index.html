@@ -1,0 +1,262 @@
+﻿<!DOCTYPE html>
+<!--[if IE]><![endif]-->
+<html>
+  
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Noise.NET </title>
+    <meta name="viewport" content="width=device-width">
+    <meta name="title" content="Noise.NET ">
+    <meta name="generator" content="docfx 2.38.1.0">
+    
+    <link rel="shortcut icon" href="favicon.ico">
+    <link rel="stylesheet" href="styles/docfx.vendor.css">
+    <link rel="stylesheet" href="styles/docfx.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <meta property="docfx:navrel" content="toc">
+    <meta property="docfx:tocrel" content="toc">
+    
+    
+    
+  </head>
+  <body data-spy="scroll" data-target="#affix" data-offset="120">
+    <div id="wrapper">
+      <header>
+        
+        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
+          <div class="container">
+            <div class="navbar-header">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+              </button>
+              
+              <a class="navbar-brand" href="index.html">
+                <img id="logo" class="svg" src="logo.svg" alt="">
+              </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+              <form class="navbar-form navbar-right" role="search" id="search">
+                <div class="form-group">
+                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
+                </div>
+              </form>
+                <ul class="nav level1 navbar-nav">
+                  <li class="">
+                    <a href="api/Cryptography.html" title="API Reference" class="">API Reference</a>
+                  </li>
+                </ul>
+            </div>
+          </div>
+        </nav>
+        
+        <div class="subnav navbar navbar-default">
+          <div class="container hide-when-search" id="breadcrumb">
+            <ul class="breadcrumb">
+              <li></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+      <div role="main" class="container body-content hide-when-search">
+        <div class="article row grid">
+          <div class="col-md-10">
+            <article class="content wrap" id="_content" data-uid="">
+<h1 id="aes-gcm-siv-license">AES-GCM-SIV <a href="https://github.com/metalnem/aes-gcm-siv/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat" alt="license"></a></h1>
+
+<p>C# implementation of <a href="https://eprint.iacr.org/2017/168.pdf">AES-GCM-SIV</a> nonce misuse-resistant authenticated encryption,
+defined in <a href="https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08">draft-irtf-cfrg-gcmsiv-08</a>.</p>
+<h2 id="performance">Performance</h2>
+<pre><code class="lang-ini">BenchmarkDotNet=v0.11.1, OS=macOS Mojave 10.14 (18A391) [Darwin 18.0.0]
+Intel Core i7-5557U CPU 3.10GHz (Broadwell), 1 CPU, 4 logical and 2 physical cores
+.NET Core SDK=3.0.100-alpha1-009640
+  [Host] : .NET Core 3.0.0-preview1-27004-04 (CoreCLR 4.6.27003.04, CoreFX 4.6.27003.02), 64bit RyuJIT
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Size</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Scaled</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>AES-GCM (native)</strong></td>
+<td><strong>4096</strong></td>
+<td style="text-align: right;"><strong>1.722 us</strong></td>
+<td style="text-align: right;"><strong>0.0023 us</strong></td>
+<td style="text-align: right;"><strong>0.0022 us</strong></td>
+<td style="text-align: right;"><strong>1.00</strong></td>
+</tr>
+<tr>
+<td>AES-GCM (libsodium)</td>
+<td>4096</td>
+<td style="text-align: right;">3.012 us</td>
+<td style="text-align: right;">0.0021 us</td>
+<td style="text-align: right;">0.0020 us</td>
+<td style="text-align: right;">1.75</td>
+</tr>
+<tr>
+<td>AES-GCM-SIV</td>
+<td>4096</td>
+<td style="text-align: right;">1.795 us</td>
+<td style="text-align: right;">0.0011 us</td>
+<td style="text-align: right;">0.0010 us</td>
+<td style="text-align: right;">1.04</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td><strong>AES-GCM (native)</strong></td>
+<td><strong>8192</strong></td>
+<td style="text-align: right;"><strong>2.961 us</strong></td>
+<td style="text-align: right;"><strong>0.0017 us</strong></td>
+<td style="text-align: right;"><strong>0.0015 us</strong></td>
+<td style="text-align: right;"><strong>1.00</strong></td>
+</tr>
+<tr>
+<td>AES-GCM (libsodium)</td>
+<td>8192</td>
+<td style="text-align: right;">5.824 us</td>
+<td style="text-align: right;">0.0021 us</td>
+<td style="text-align: right;">0.0017 us</td>
+<td style="text-align: right;">1.97</td>
+</tr>
+<tr>
+<td>AES-GCM-SIV</td>
+<td>8192</td>
+<td style="text-align: right;">3.262 us</td>
+<td style="text-align: right;">0.0014 us</td>
+<td style="text-align: right;">0.0012 us</td>
+<td style="text-align: right;">1.10</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="lang-ini">BenchmarkDotNet=v0.11.1, OS=Windows 10.0.17134.285 (1803/April2018Update/Redstone4)
+Intel Core i7-4800MQ CPU 2.70GHz (Max: 1.35GHz) (Haswell), 1 CPU, 8 logical and 4 physical cores
+Frequency=2630637 Hz, Resolution=380.1361 ns, Timer=TSC
+.NET Core SDK=3.0.100-alpha1-009638
+  [Host] : .NET Core 3.0.0-preview1-27003-04 (CoreCLR 4.6.27002.04, CoreFX 4.6.27002.03), 64bit RyuJIT
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Size</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">Error</th>
+<th style="text-align: right;">StdDev</th>
+<th style="text-align: right;">Scaled</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>AES-GCM (native)</strong></td>
+<td><strong>4096</strong></td>
+<td style="text-align: right;"><strong>1.996 us</strong></td>
+<td style="text-align: right;"><strong>0.0040 us</strong></td>
+<td style="text-align: right;"><strong>0.0035 us</strong></td>
+<td style="text-align: right;"><strong>1.00</strong></td>
+</tr>
+<tr>
+<td>AES-GCM (libsodium)</td>
+<td>4096</td>
+<td style="text-align: right;">2.628 us</td>
+<td style="text-align: right;">0.0064 us</td>
+<td style="text-align: right;">0.0060 us</td>
+<td style="text-align: right;">1.32</td>
+</tr>
+<tr>
+<td>AES-GCM-SIV</td>
+<td>4096</td>
+<td style="text-align: right;">1.911 us</td>
+<td style="text-align: right;">0.0033 us</td>
+<td style="text-align: right;">0.0031 us</td>
+<td style="text-align: right;">0.96</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+<tr>
+<td><strong>AES-GCM (native)</strong></td>
+<td><strong>8192</strong></td>
+<td style="text-align: right;"><strong>3.710 us</strong></td>
+<td style="text-align: right;"><strong>0.0042 us</strong></td>
+<td style="text-align: right;"><strong>0.0039 us</strong></td>
+<td style="text-align: right;"><strong>1.00</strong></td>
+</tr>
+<tr>
+<td>AES-GCM (libsodium)</td>
+<td>8192</td>
+<td style="text-align: right;">5.050 us</td>
+<td style="text-align: right;">0.0055 us</td>
+<td style="text-align: right;">0.0049 us</td>
+<td style="text-align: right;">1.36</td>
+</tr>
+<tr>
+<td>AES-GCM-SIV</td>
+<td>8192</td>
+<td style="text-align: right;">3.534 us</td>
+<td style="text-align: right;">0.0407 us</td>
+<td style="text-align: right;">0.0340 us</td>
+<td style="text-align: right;">0.95</td>
+</tr>
+</tbody>
+</table>
+</article>
+          </div>
+          
+          <div class="hidden-sm col-md-2" role="complementary">
+            <div class="sideaffix">
+              <div class="contribution">
+                <ul class="nav">
+                  <li>
+                    <a href="https://github.com/Metalnem/aes-gcm-siv/blob/master/index.md/#L1" class="contribution-link">Improve this Doc</a>
+                  </li>
+                </ul>
+              </div>
+              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
+              <!-- <p><a class="back-to-top" href="#top">Back to top</a><p> -->
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <footer>
+        <div class="grad-bottom"></div>
+        <div class="footer">
+          <div class="container">
+            <span class="pull-right">
+              <a href="#top">Back to top</a>
+            </span>
+            
+            <span>Generated by <strong>DocFX</strong></span>
+          </div>
+        </div>
+      </footer>
+    </div>
+    
+    <script type="text/javascript" src="styles/docfx.vendor.js"></script>
+    <script type="text/javascript" src="styles/docfx.js"></script>
+    <script type="text/javascript" src="styles/main.js"></script>
+  </body>
+</html>
