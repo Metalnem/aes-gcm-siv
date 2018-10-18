@@ -33,6 +33,19 @@ namespace Cryptography.Benchmarks
 			ref byte k
 		);
 
+		[DllImport(Name, CallingConvention = CallingConvention.Cdecl)]
+		public static extern int crypto_aead_aes256gcm_decrypt_detached(
+			ref byte m,
+			IntPtr nsec,
+			ref byte c,
+			long clen,
+			ref byte mac,
+			ref byte ad,
+			long adlen,
+			ref byte npub,
+			ref byte k
+		);
+
 		public static void Encrypt(
 			ReadOnlySpan<byte> key,
 			ReadOnlySpan<byte> nonce,
@@ -57,6 +70,32 @@ namespace Cryptography.Benchmarks
 			if (result != 0)
 			{
 				throw new CryptographicException("Encryption failed.");
+			}
+		}
+
+		public static void Decrypt(
+			ReadOnlySpan<byte> key,
+			ReadOnlySpan<byte> nonce,
+			ReadOnlySpan<byte> associatedData,
+			ReadOnlySpan<byte> ciphertext,
+			ReadOnlySpan<byte> tag,
+			Span<byte> plaintext)
+		{
+			int result = Libsodium.crypto_aead_aes256gcm_decrypt_detached(
+				ref MemoryMarshal.GetReference(plaintext),
+				IntPtr.Zero,
+				ref MemoryMarshal.GetReference(ciphertext),
+				ciphertext.Length,
+				ref MemoryMarshal.GetReference(tag),
+				ref MemoryMarshal.GetReference(associatedData),
+				associatedData.Length,
+				ref MemoryMarshal.GetReference(nonce),
+				ref MemoryMarshal.GetReference(key)
+			);
+
+			if (result != 0)
+			{
+				throw new CryptographicException("Decryption failed.");
 			}
 		}
 	}

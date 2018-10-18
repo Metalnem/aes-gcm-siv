@@ -5,7 +5,7 @@ namespace Cryptography.Benchmarks
 {
 	[InProcess]
 	[MarkdownExporter]
-	public class AeadBenchmark
+	public class EncryptionBenchmark
 	{
 		private byte[] key;
 		private byte[] nonce;
