@@ -7,6 +7,10 @@ namespace Cryptography
 {
 	public unsafe partial class AesGcmSiv
 	{
+		// Encrypt4 encrypts ptLen bytes from pt to ct using the expanded key from ks.
+		// It processes 4 blocks of data in parallel (if the size of the input is not
+		// divisible by 64, the remainder blocks are handled separately). The initial
+		// counter is constructed from the given tag as required by AES-GCM-SIV.
 		private static void Encrypt4(byte* pt, int ptLen, byte* ct, byte* tag, byte* ks)
 		{
 			if (ptLen == 0)
@@ -100,6 +104,10 @@ namespace Cryptography
 			}
 		}
 
+		// Encrypt8 encrypts ptLen bytes from pt to ct using the expanded key from ks.
+		// It processes 8 blocks of data in parallel (if the size of the input is not
+		// divisible by 128, the remainder blocks are handled separately). The initial
+		// counter is constructed from the given tag as required by AES-GCM-SIV.
 		private static void Encrypt8(byte* pt, int ptLen, byte* ct, byte* tag, byte* ks)
 		{
 			if (ptLen == 0)
