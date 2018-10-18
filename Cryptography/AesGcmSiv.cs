@@ -26,6 +26,8 @@ namespace Cryptography
 		private readonly int threshold = 128;
 		private bool disposed;
 
+		// TODO: tb = Sse.StaticCast<ulong, sbyte>(t)
+		// TODO: benchmark PolyvalPowersTable versus DecryptPowersTable
 		// TODO: pipeline sll/slr instructions
 		// TODO: publish package
 		// TODO: performance of DecryptPowersTable is not as good as expected
