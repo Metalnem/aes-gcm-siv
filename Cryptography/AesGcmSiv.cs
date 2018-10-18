@@ -26,26 +26,6 @@ namespace Cryptography
 		private readonly int threshold = 128;
 		private bool disposed;
 
-		// TODO: tb = Sse.StaticCast<ulong, sbyte>(t)
-		// TODO: benchmark PolyvalPowersTable versus DecryptPowersTable
-		// TODO: pipeline sll/slr instructions
-		// TODO: publish package
-		// TODO: performance of DecryptPowersTable is not as good as expected
-		// TODO: add DocFX
-		// TODO: compare to BoringSSL implementation
-		// TODO: use powers table for decryption of large additional data
-		// TODO: add decryption and authentication benchmark results
-		// TODO: update README file
-		// TODO: make package icon
-		// TODO: add continuous integration
-		// TODO: more consistent naming (shorter names for pointers and sizes)
-		// TODO: add public docs
-		// TODO: add BoringSSL docs for private methods (also Shay's when available)
-		// TODO: zero out all intermediate keys in Encrypt/Decrypt methods
-		// TODO: try to pipeline CLMUL instructions and to load powers as needed
-		// TODO: strong name
-		// TODO: assembly version
-
 		public AesGcmSiv(byte[] key) : this((ReadOnlySpan<byte>)(key ?? throw new ArgumentNullException()))
 		{
 		}
