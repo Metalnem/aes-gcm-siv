@@ -65,6 +65,65 @@ using (var siv = new AesGcmSiv(key))
 > dotnet add package AES-GCM-SIV --version 0.1.0-alpha
 ```
 
+## Performance (Windows)
+
+``` ini
+BenchmarkDotNet=v0.11.1, OS=Windows 10.0.17134.345 (1803/April2018Update/Redstone4)
+Intel Core i7-4800MQ CPU 2.70GHz (Max: 2.69GHz) (Haswell), 1 CPU, 8 logical and 4 physical cores
+Frequency=2630637 Hz, Resolution=380.1361 ns, Timer=TSC
+.NET Core SDK=3.0.100-alpha1-009638
+  [Host] : .NET Core 3.0.0-preview1-27003-04 (CoreCLR 4.6.27002.04, CoreFX 4.6.27002.03), 64bit RyuJIT
+```
+|                Method |     Categories | Size |       Mean |      Error |     StdDev | Scaled | ScaledSD |
+|---------------------- |--------------- |----- |-----------:|-----------:|-----------:|-------:|---------:|
+|    **AES-GCM (native)** |     **Encryption** |  **128** |   **304.9 ns** |  **0.2947 ns** |  **0.2461 ns** |   **1.00** |     **0.00** |
+| AES-GCM (libsodium) |     Encryption |  128 |   261.5 ns |  0.3746 ns |  0.3128 ns |   0.86 |     0.00 |
+|           AES-GCM-SIV |     Encryption |  128 |   285.3 ns |  0.9613 ns |  0.8027 ns |   0.94 |     0.00 |
+|                       |                |      |            |            |            |        |          |
+|    AES-GCM (native) |     Decryption |  128 |   304.8 ns |  0.2339 ns |  0.1953 ns |   1.00 |     0.00 |
+| AES-GCM (libsodium) |     Decryption |  128 |   260.8 ns |  0.2872 ns |  0.2546 ns |   0.86 |     0.00 |
+|           AES-GCM-SIV |     Decryption |  128 |   377.7 ns |  0.5921 ns |  0.5248 ns |   1.24 |     0.00 |
+|                       |                |      |            |            |            |        |          |
+|      GHASH (native) | Authentication |  128 |   267.3 ns |  0.2349 ns |  0.2083 ns |   1.00 |     0.00 |
+|   GHASH (libsodium) | Authentication |  128 |   198.5 ns |  0.2222 ns |  0.1969 ns |   0.74 |     0.00 |
+|               POLYVAL | Authentication |  128 |   237.5 ns |  0.2820 ns |  0.2499 ns |   0.89 |     0.00 |
+|                       |                |      |            |            |            |        |          |
+|    **AES-GCM (native)** |     **Encryption** | **1024** |   **692.6 ns** |  **0.2705 ns** |  **0.2259 ns** |   **1.00** |     **0.00** |
+| AES-GCM (libsodium) |     Encryption | 1024 |   805.3 ns |  0.4027 ns |  0.3570 ns |   1.16 |     0.00 |
+|           AES-GCM-SIV |     Encryption | 1024 |   666.2 ns |  0.3535 ns |  0.3134 ns |   0.96 |     0.00 |
+|                       |                |      |            |            |            |        |          |
+|    AES-GCM (native) |     Decryption | 1024 |   677.4 ns |  0.9437 ns |  0.7368 ns |   1.00 |     0.00 |
+| AES-GCM (libsodium) |     Decryption | 1024 |   879.1 ns | 22.5680 ns | 21.1101 ns |   1.30 |     0.03 |
+|           AES-GCM-SIV |     Decryption | 1024 |   810.5 ns |  4.5300 ns |  4.2374 ns |   1.20 |     0.01 |
+|                       |                |      |            |            |            |        |          |
+|      GHASH (native) | Authentication | 1024 |   423.1 ns |  0.9522 ns |  0.7951 ns |   1.00 |     0.00 |
+|   GHASH (libsodium) | Authentication | 1024 |   408.4 ns |  0.3715 ns |  0.3475 ns |   0.97 |     0.00 |
+|               POLYVAL | Authentication | 1024 |   421.6 ns |  1.0462 ns |  0.8736 ns |   1.00 |     0.00 |
+|                       |                |      |            |            |            |        |          |
+|    **AES-GCM (native)** |     **Encryption** | **4096** | **2,097.6 ns** | **13.4482 ns** | **12.5795 ns** |   **1.00** |     **0.00** |
+| AES-GCM (libsodium) |     Encryption | 4096 | 2,769.7 ns |  5.6692 ns |  4.7341 ns |   1.32 |     0.01 |
+|           AES-GCM-SIV |     Encryption | 4096 | 2,035.3 ns | 15.5301 ns | 14.5269 ns |   0.97 |     0.01 |
+|                       |                |      |            |            |            |        |          |
+|    AES-GCM (native) |     Decryption | 4096 | 2,095.7 ns |  3.5219 ns |  3.1221 ns |   1.00 |     0.00 |
+| AES-GCM (libsodium) |     Decryption | 4096 | 3,164.9 ns |  9.1115 ns |  8.5229 ns |   1.51 |     0.00 |
+|           AES-GCM-SIV |     Decryption | 4096 | 2,024.8 ns |  2.6653 ns |  2.4931 ns |   0.97 |     0.00 |
+|                       |                |      |            |            |            |        |          |
+|      GHASH (native) | Authentication | 4096 |   926.8 ns |  7.8589 ns |  7.3512 ns |   1.00 |     0.00 |
+|   GHASH (libsodium) | Authentication | 4096 | 1,083.3 ns |  3.9336 ns |  3.6795 ns |   1.17 |     0.01 |
+|               POLYVAL | Authentication | 4096 |   894.5 ns |  6.7395 ns |  6.3042 ns |   0.97 |     0.01 |
+|                       |                |      |            |            |            |        |          |
+|    **AES-GCM (native)** |     **Encryption** | **8192** | **3,918.0 ns** |  **7.2812 ns** |  **6.8109 ns** |   **1.00** |     **0.00** |
+| AES-GCM (libsodium) |     Encryption | 8192 | 5,356.0 ns | 14.7993 ns | 13.8433 ns |   1.37 |     0.00 |
+|           AES-GCM-SIV |     Encryption | 8192 | 3,706.5 ns |  9.6054 ns |  8.9849 ns |   0.95 |     0.00 |
+|                       |                |      |            |            |            |        |          |
+|    AES-GCM (native) |     Decryption | 8192 | 3,912.5 ns | 12.2199 ns | 11.4305 ns |   1.00 |     0.00 |
+| AES-GCM (libsodium) |     Decryption | 8192 | 6,138.9 ns | 34.2531 ns | 32.0404 ns |   1.57 |     0.01 |
+|           AES-GCM-SIV |     Decryption | 8192 | 3,692.4 ns | 71.4367 ns | 59.6529 ns |   0.94 |     0.01 |
+|                       |                |      |            |            |            |        |          |
+|      GHASH (native) | Authentication | 8192 | 1,572.0 ns |  5.0056 ns |  4.4373 ns |   1.00 |     0.00 |
+|   GHASH (libsodium) | Authentication | 8192 | 2,013.1 ns |  7.7082 ns |  7.2102 ns |   1.28 |     0.01 |
+|               POLYVAL | Authentication | 8192 | 1,543.9 ns |  3.5905 ns |  3.3586 ns |   0.98 |     0.00 |
+
 ## Performance (macOS)
 
 ``` ini
