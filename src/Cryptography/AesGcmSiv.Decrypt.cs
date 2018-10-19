@@ -15,7 +15,6 @@ namespace Cryptography
 		{
 			Vector128<byte> key;
 			Vector128<ulong> sCtr1, sCtr2, sCtr3, sCtr4, sCtr5, sCtr6, tmp0, tmp1, tmp2, tmp3, tmp4, h;
-			Vector128<sbyte> tb;
 
 			var poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
 			var t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(polyval));
@@ -242,8 +241,7 @@ namespace Cryptography
 					ctr5 = Aes.Encrypt(ctr5, key);
 					ctr6 = Aes.Encrypt(ctr6, key);
 
-					tb = Sse.StaticCast<ulong, sbyte>(t);
-					tmp1 = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+					tmp1 = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(Sse.StaticCast<ulong, sbyte>(t), Sse.StaticCast<ulong, sbyte>(t), 8));
 					t = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
 					t = Sse2.Xor(tmp1, t);
 
@@ -294,8 +292,7 @@ namespace Cryptography
 					ctr5 = Sse2.Xor(ctr5, Sse2.LoadVector128(&ct[(blocks + 4) * 16]));
 					ctr6 = Sse2.Xor(ctr6, Sse2.LoadVector128(&ct[(blocks + 5) * 16]));
 
-					tb = Sse.StaticCast<ulong, sbyte>(t);
-					tmp1 = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+					tmp1 = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(Sse.StaticCast<ulong, sbyte>(t), Sse.StaticCast<ulong, sbyte>(t), 8));
 					t = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
 					t = Sse2.Xor(tmp1, t);
 					t = Sse2.Xor(tmp4, t);
@@ -381,12 +378,10 @@ namespace Cryptography
 				tmp3 = Sse2.ShiftLeftLogical128BitLane(tmp0, 8);
 				t = Sse2.Xor(tmp3, tmp2);
 
-				tb = Sse.StaticCast<ulong, sbyte>(t);
-				tmp1 = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+				tmp1 = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(Sse.StaticCast<ulong, sbyte>(t), Sse.StaticCast<ulong, sbyte>(t), 8));
 				t = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
 				t = Sse2.Xor(tmp1, t);
-				tb = Sse.StaticCast<ulong, sbyte>(t);
-				tmp1 = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+				tmp1 = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(Sse.StaticCast<ulong, sbyte>(t), Sse.StaticCast<ulong, sbyte>(t), 8));
 				t = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
 				t = Sse2.Xor(tmp1, t);
 				t = Sse2.Xor(tmp4, t);

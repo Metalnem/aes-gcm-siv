@@ -88,7 +88,6 @@ namespace Cryptography
 			int remainder128 = length % 128 - remainder16;
 
 			Vector128<ulong> tmp0, tmp1, tmp2, tmp3, tmp4, data, h;
-			Vector128<sbyte> tb;
 
 			var xhi = Sse2.SetZeroVector128<ulong>();
 			var poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
@@ -255,8 +254,7 @@ namespace Cryptography
 
 					data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInput[(i + 5) * 16]));
 					tmp4 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
-					tb = Sse.StaticCast<ulong, sbyte>(t);
-					t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+					t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(Sse.StaticCast<ulong, sbyte>(t), Sse.StaticCast<ulong, sbyte>(t), 8));
 
 					tmp3 = Pclmulqdq.CarrylessMultiply(data, h2, 0x01);
 					tmp2 = Sse2.Xor(tmp2, tmp3);
@@ -281,8 +279,7 @@ namespace Cryptography
 
 					data = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(&fixedInput[(i + 3) * 16]));
 					tmp4 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
-					tb = Sse.StaticCast<ulong, sbyte>(t);
-					t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+					t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(Sse.StaticCast<ulong, sbyte>(t), Sse.StaticCast<ulong, sbyte>(t), 8));
 
 					tmp3 = Pclmulqdq.CarrylessMultiply(data, h4, 0x01);
 					tmp2 = Sse2.Xor(tmp2, tmp3);
@@ -339,12 +336,10 @@ namespace Cryptography
 			if (blocks != 0 || remainder128 != 0)
 			{
 				tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
-				tb = Sse.StaticCast<ulong, sbyte>(t);
-				t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+				t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(Sse.StaticCast<ulong, sbyte>(t), Sse.StaticCast<ulong, sbyte>(t), 8));
 				t = Sse2.Xor(tmp3, t);
 				tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
-				tb = Sse.StaticCast<ulong, sbyte>(t);
-				t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+				t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(Sse.StaticCast<ulong, sbyte>(t), Sse.StaticCast<ulong, sbyte>(t), 8));
 				t = Sse2.Xor(tmp3, t);
 				t = Sse2.Xor(xhi, t);
 			}
@@ -367,12 +362,10 @@ namespace Cryptography
 				t = Sse2.Xor(tmp0, tmp2);
 
 				tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
-				tb = Sse.StaticCast<ulong, sbyte>(t);
-				t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+				t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(Sse.StaticCast<ulong, sbyte>(t), Sse.StaticCast<ulong, sbyte>(t), 8));
 				t = Sse2.Xor(tmp3, t);
 				tmp3 = Pclmulqdq.CarrylessMultiply(t, poly, 0x10);
-				tb = Sse.StaticCast<ulong, sbyte>(t);
-				t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(tb, tb, 8));
+				t = Sse.StaticCast<sbyte, ulong>(Ssse3.AlignRight(Sse.StaticCast<ulong, sbyte>(t), Sse.StaticCast<ulong, sbyte>(t), 8));
 				t = Sse2.Xor(tmp3, t);
 				t = Sse2.Xor(xhi, t);
 			}
