@@ -9,10 +9,10 @@
       "output": {
         ".html": {
           "relative_path": "api/Cryptography.AesGcmSiv.html",
-          "hash": "mvdjszNrG/dK2LcmMLWi7g=="
+          "hash": "wjZtHt5rnZb1MLew2Qjlxw=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -24,7 +24,7 @@
           "hash": "As9gur98EnzD5kklEA1kfQ=="
         }
       },
-      "is_incremental": true,
+      "is_incremental": false,
       "version": ""
     },
     {
@@ -33,7 +33,7 @@
       "output": {
         ".html": {
           "relative_path": "index.html",
-          "hash": "4UARg7bIt5EF8LS/FTy9kA=="
+          "hash": "vnTz/rSOP5P0eKDMnmQnKw=="
         }
       },
       "is_incremental": false,
@@ -47,17 +47,17 @@
         "incrementalPhase": "build"
       },
       "processors": {
-        "TocDocumentProcessor": {
-          "can_incremental": false,
-          "details": "Processor TocDocumentProcessor cannot support incremental build because the processor doesn't implement ISupportIncrementalDocumentProcessor interface.",
-          "incrementalPhase": "build"
-        },
         "ConceptualDocumentProcessor": {
           "can_incremental": true,
           "incrementalPhase": "build"
         },
         "ManagedReferenceDocumentProcessor": {
           "can_incremental": true,
+          "incrementalPhase": "build"
+        },
+        "TocDocumentProcessor": {
+          "can_incremental": false,
+          "details": "Processor TocDocumentProcessor cannot support incremental build because the processor doesn't implement ISupportIncrementalDocumentProcessor interface.",
           "incrementalPhase": "build"
         }
       }
