@@ -20,7 +20,7 @@ defined in [draft-irtf-cfrg-gcmsiv-08].
 [AES-GCM-SIV]: https://eprint.iacr.org/2017/168.pdf
 [draft-irtf-cfrg-gcmsiv-08]: https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08
 
-## Sample
+## Usage
 
 ```csharp
 // Plaintext to encrypt.
