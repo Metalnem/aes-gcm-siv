@@ -1,14 +1,17 @@
 # AES-GCM-SIV
 
-[![nuget][nuget-shield]][nuget-link]
-[![docs][docs-shield]][docs-link]
-[![license][license-shield]][license-link]
+[![NuGet][nuget-shield]][nuget-link]
+[![Blazing Fast][speed-shield]][speed-link]
+[![API Docs][docs-shield]][docs-link]
+[![License][license-shield]][license-link]
 
 C# implementation of [AES-GCM-SIV] nonce misuse-resistant authenticated encryption,
 defined in [draft-irtf-cfrg-gcmsiv-08].
 
 [nuget-shield]: https://img.shields.io/nuget/v/AES-GCM-SIV.svg
 [nuget-link]: https://www.nuget.org/packages/AES-GCM-SIV
+[speed-shield]: https://img.shields.io/badge/speed-blazing%20%F0%9F%94%A5-brightgreen.svg
+[speed-link]: https://twitter.com/acdlite/status/974390255393505280
 [docs-shield]: https://img.shields.io/badge/docs-API-orange.svg?style=flat
 [docs-link]: https://metalnem.github.io/aes-gcm-siv/api/Cryptography.AesGcmSiv.html
 [license-shield]: https://img.shields.io/badge/license-MIT-blue.svg?style=flat
