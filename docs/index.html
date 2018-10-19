@@ -67,11 +67,14 @@
             <article class="content wrap" id="_content" data-uid="">
 <h1 id="aes-gcm-siv">AES-GCM-SIV</h1>
 
-<p><a href="https://www.nuget.org/packages/AES-GCM-SIV"><img src="https://img.shields.io/nuget/v/AES-GCM-SIV.svg" alt="nuget"></a>
-<a href="https://metalnem.github.io/aes-gcm-siv/api/Cryptography.AesGcmSiv.html"><img src="https://img.shields.io/badge/docs-API-orange.svg?style=flat" alt="docs"></a>
-<a href="https://github.com/metalnem/aes-gcm-siv/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat" alt="license"></a></p>
+<p><a href="https://www.nuget.org/packages/AES-GCM-SIV"><img src="https://img.shields.io/nuget/v/AES-GCM-SIV.svg" alt="NuGet"></a>
+<a href="https://twitter.com/acdlite/status/974390255393505280"><img src="https://img.shields.io/badge/speed-blazing%20%F0%9F%94%A5-brightgreen.svg" alt="Blazing Fast"></a>
+<a href="https://metalnem.github.io/aes-gcm-siv/api/Cryptography.AesGcmSiv.html"><img src="https://img.shields.io/badge/docs-API-orange.svg?style=flat" alt="API Docs"></a>
+<a href="https://github.com/metalnem/aes-gcm-siv/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat" alt="License"></a></p>
 <p>C# implementation of <a href="https://eprint.iacr.org/2017/168.pdf">AES-GCM-SIV</a> nonce misuse-resistant authenticated encryption,
-defined in <a href="https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08">draft-irtf-cfrg-gcmsiv-08</a>.</p>
+defined in <a href="https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08">draft-irtf-cfrg-gcmsiv-08</a>. It's based on the <a href="https://github.com/Shay-Gueron/AES-GCM-SIV">C intrinsics code</a> written
+by Shay Gueron. This library uses C# platform intrinsics, which is why you need
+.NET Core 3.0 (currently available in alpha) in order to use it.</p>
 <h2 id="usage">Usage</h2>
 <pre><code class="lang-csharp">// Plaintext to encrypt.
 var plaintext = &quot;I'm cooking MC's like a pound of bacon&quot;;

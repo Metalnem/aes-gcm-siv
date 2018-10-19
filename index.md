@@ -12,7 +12,7 @@ title: Noise.NET
 C# implementation of [AES-GCM-SIV] nonce misuse-resistant authenticated encryption,
 defined in [draft-irtf-cfrg-gcmsiv-08]. It's based on the [C intrinsics code] written
 by Shay Gueron. This library uses C# platform intrinsics, which is why you need
-.NET Core 3.0 (currently available in alpha) to use it.
+.NET Core 3.0 (currently available in alpha) in order to use it.
 
 [nuget-shield]: https://img.shields.io/nuget/v/AES-GCM-SIV.svg
 [nuget-link]: https://www.nuget.org/packages/AES-GCM-SIV
