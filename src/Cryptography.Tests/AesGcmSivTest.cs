@@ -151,15 +151,18 @@ namespace Cryptography.Tests
 				siv.Encrypt(nonce, plaintext, plaintext, tag);
 				Assert.Equal("b8f9d292c80c757ce0639ee04dba3ebd", Hex.Encode(tag));
 
-				Array.Clear(plaintext, 0, plaintext.Length);
+				siv.Decrypt(nonce, plaintext, tag, plaintext);
 
 				siv.Encrypt(nonce, empty, empty, tag, plaintext);
 				Assert.Equal("a6126fd232ed46bfa639cef6418b14fd", Hex.Encode(tag));
 
-				Array.Clear(plaintext, 0, plaintext.Length);
+				siv.Decrypt(nonce, empty, tag, empty, plaintext);
 
 				siv.Encrypt(nonce, plaintext, plaintext, tag, plaintext);
 				Assert.Equal("6d15c063e7c3d68db84201d887ddde46", Hex.Encode(tag));
+
+				siv.Decrypt(nonce, plaintext, tag, plaintext, plaintext);
+				Assert.True(plaintext.All(item => item == 0));
 			}
 		}
 
@@ -181,15 +184,22 @@ namespace Cryptography.Tests
 					siv.Encrypt(nonce, plaintext, plaintext, tag, default);
 					Assert.Equal("b8246fbcb073f59dbf963b46a19db688", Hex.Encode(tag));
 
-					plaintext.Clear();
+					siv.Decrypt(nonce, plaintext, tag, plaintext, default);
 
 					siv.Encrypt(nonce, default, default, tag, plaintext);
 					Assert.Equal("c5b65922f2f64799a1d62c8036520c9d", Hex.Encode(tag));
 
-					plaintext.Clear();
+					siv.Decrypt(nonce, default, tag, default, plaintext);
 
 					siv.Encrypt(nonce, plaintext, plaintext, tag, plaintext);
 					Assert.Equal("e017665be4c97b25610602e6e4c81a5e", Hex.Encode(tag));
+
+					siv.Decrypt(nonce, plaintext, tag, plaintext, plaintext);
+
+					foreach (var item in plaintext)
+					{
+						Assert.Equal(0, item);
+					}
 				}
 			}
 			finally
