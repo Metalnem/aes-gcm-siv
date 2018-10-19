@@ -6,7 +6,9 @@
 [![License][license-shield]][license-link]
 
 C# implementation of [AES-GCM-SIV] nonce misuse-resistant authenticated encryption,
-defined in [draft-irtf-cfrg-gcmsiv-08].
+defined in [draft-irtf-cfrg-gcmsiv-08]. It's based on the [C intrinsics code] written
+by Shay Gueron. This library uses C# platform intrinsics, which is why you need
+.NET Core 3.0 (currently available in alpha) to use it.
 
 [nuget-shield]: https://img.shields.io/nuget/v/AES-GCM-SIV.svg
 [nuget-link]: https://www.nuget.org/packages/AES-GCM-SIV
@@ -18,6 +20,7 @@ defined in [draft-irtf-cfrg-gcmsiv-08].
 [license-link]: https://github.com/metalnem/aes-gcm-siv/blob/master/LICENSE
 [AES-GCM-SIV]: https://eprint.iacr.org/2017/168.pdf
 [draft-irtf-cfrg-gcmsiv-08]: https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08
+[C intrinsics code]: https://github.com/Shay-Gueron/AES-GCM-SIV
 
 ## Usage
 
