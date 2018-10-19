@@ -365,6 +365,8 @@ namespace Cryptography
 			}
 		}
 
+		// KeySchedule performs a key expansion of the AES-256
+		// key in key, and writes the expanded key to ks.
 		private static void KeySchedule(byte* key, byte* ks)
 		{
 			Vector128<byte> xmm1, xmm2, xmm3, xmm4, xmm14;
@@ -412,6 +414,8 @@ namespace Cryptography
 			Sse2.Store(&ks[14 * 16], xmm1);
 		}
 
+		// DeriveKeys performs the AES-GCM-SIV KDF given the expanded key from ks and
+		// the nonce in nonce. The resulting keys are placed in hashKey and encKey.
 		private static void DeriveKeys(byte* nonce, byte* ks, byte* hashKey, byte* encKey)
 		{
 			var n = (int*)nonce;
@@ -479,7 +483,8 @@ namespace Cryptography
 			Sse2.StoreLow((long*)encKey + 3, Sse.StaticCast<byte, long>(b6));
 		}
 
-		private static void InitPowersTable(byte* powersTable, int size, byte* hashKey)
+		// InitPowersTable writes powers 1..size of hashKey to htbl.
+		private static void InitPowersTable(byte* htbl, int size, byte* hashKey)
 		{
 			Vector128<ulong> tmp0, tmp1, tmp2, tmp3, tmp4;
 
@@ -487,7 +492,7 @@ namespace Cryptography
 			var t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(hashKey));
 
 			tmp0 = t;
-			Sse2.Store(powersTable, Sse.StaticCast<ulong, byte>(t));
+			Sse2.Store(htbl, Sse.StaticCast<ulong, byte>(t));
 
 			for (int i = 1; i < size; ++i)
 			{
@@ -507,10 +512,12 @@ namespace Cryptography
 				tmp3 = Sse.StaticCast<uint, ulong>(Sse2.Shuffle(Sse.StaticCast<ulong, uint>(tmp1), 78));
 				tmp1 = Sse2.Xor(tmp3, tmp2);
 				t = Sse2.Xor(tmp4, tmp1);
-				Sse2.Store(&powersTable[i * 16], Sse.StaticCast<ulong, byte>(t));
+				Sse2.Store(&htbl[i * 16], Sse.StaticCast<ulong, byte>(t));
 			}
 		}
 
+		// EncryptTag performs a key expansion of the AES-256 key in key, writes
+		// the expanded key to ks, and encrypts a single block from pt to ct.
 		private static void EncryptTag(byte* pt, byte* ct, byte* key, byte* ks)
 		{
 			Vector128<byte> xmm1, xmm2, xmm3, xmm4, xmm14, b1;
@@ -566,6 +573,7 @@ namespace Cryptography
 			Sse2.Store(ct, b1);
 		}
 
+		// EncryptBlock encrypts a single block from pt to ct using the expanded key in ks.
 		private static void EncryptBlock(byte* pt, byte* ct, byte* ks)
 		{
 			var block = Sse2.LoadVector128(pt);
