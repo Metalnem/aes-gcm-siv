@@ -568,7 +568,6 @@ namespace Cryptography
 			xmm1 = Sse2.Xor(xmm1, xmm4);
 			xmm1 = Sse2.Xor(xmm1, xmm2);
 			Sse2.Store(&ks[14 * 16], xmm1);
-
 			b1 = Aes.EncryptLast(b1, xmm1);
 			Sse2.Store(ct, b1);
 		}
