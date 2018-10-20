@@ -355,10 +355,7 @@ namespace Cryptography
 
 			EncryptBlock(polyval, decTag, encRoundKeys);
 
-			var tagSpan = new Span<byte>(tag, 16);
-			var decTagSpan = new Span<byte>(decTag, 16);
-
-			if (!CryptographicOperations.FixedTimeEquals(tagSpan, decTagSpan))
+			if (!ConstantTimeEquals16(tag, decTag))
 			{
 				CryptographicOperations.ZeroMemory(new Span<byte>(pt, ctLen));
 				throw new CryptographicException("The computed authentication tag did not match the input authentication tag.");
@@ -607,6 +604,31 @@ namespace Cryptography
 		private static byte* Align16(byte* ptr)
 		{
 			return (byte*)(((ulong)ptr + Align16Overhead) & Align16Mask);
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+		private static bool ConstantTimeEquals16(byte* x, byte* y)
+		{
+			int acc = 0;
+
+			acc |= x[0] ^ y[0];
+			acc |= x[1] ^ y[1];
+			acc |= x[2] ^ y[2];
+			acc |= x[3] ^ y[3];
+			acc |= x[4] ^ y[4];
+			acc |= x[5] ^ y[5];
+			acc |= x[6] ^ y[6];
+			acc |= x[7] ^ y[7];
+			acc |= x[8] ^ y[8];
+			acc |= x[9] ^ y[9];
+			acc |= x[10] ^ y[10];
+			acc |= x[11] ^ y[11];
+			acc |= x[12] ^ y[12];
+			acc |= x[13] ^ y[13];
+			acc |= x[14] ^ y[14];
+			acc |= x[15] ^ y[15];
+
+			return acc == 0;
 		}
 
 		private static void ThrowIfNull(object value, string name)
