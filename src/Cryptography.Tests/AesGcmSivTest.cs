@@ -101,19 +101,48 @@ namespace Cryptography.Tests
 				using (var siv = new AesGcmSiv(vector.Key))
 				{
 					var ciphertext = vector.Result.AsSpan(0, vector.Plaintext.Length);
+					var tag = vector.Result.AsSpan(vector.Plaintext.Length);
 
 					for (int i = 0; i < ciphertext.Length; ++i)
 					{
-						++ciphertext[i];
-						Assert.Throws<CryptographicException>(() => TestDecryptSingle(siv, vector));
-						--ciphertext[i];
+						var value = ciphertext[i];
+
+						for (int j = 0; j < 8; ++j)
+						{
+							ciphertext[i] ^= (byte)(1 << j);
+							Assert.Throws<CryptographicException>(() => TestDecryptSingle(siv, vector));
+
+							ciphertext[i] ^= (byte)(1 << j);
+							Assert.Equal(value, ciphertext[i]);
+						}
 					}
 
 					for (int i = 0; i < vector.Aad.Length; ++i)
 					{
-						++vector.Aad[i];
-						Assert.Throws<CryptographicException>(() => TestDecryptSingle(siv, vector));
-						--vector.Aad[i];
+						var value = vector.Aad[i];
+
+						for (int j = 0; j < 8; ++j)
+						{
+							vector.Aad[i] ^= (byte)(1 << j);
+							Assert.Throws<CryptographicException>(() => TestDecryptSingle(siv, vector));
+
+							vector.Aad[i] ^= (byte)(1 << j);
+							Assert.Equal(value, vector.Aad[i]);
+						}
+					}
+
+					for (int i = 0; i < tag.Length; ++i)
+					{
+						var value = tag[i];
+
+						for (int j = 0; j < 8; ++j)
+						{
+							tag[i] ^= (byte)(1 << j);
+							Assert.Throws<CryptographicException>(() => TestDecryptSingle(siv, vector));
+
+							tag[i] ^= (byte)(1 << j);
+							Assert.Equal(value, tag[i]);
+						}
 					}
 				}
 			}
