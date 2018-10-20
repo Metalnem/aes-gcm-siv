@@ -80,31 +80,31 @@ Frequency=2630636 Hz, Resolution=380.1362 ns, Timer=TSC
 .NET Core SDK=3.0.100-alpha1-009638
   [Host] : .NET Core 3.0.0-preview1-27003-04 (CoreCLR 4.6.27002.04, CoreFX 4.6.27002.03), 64bit RyuJIT
 ```
-|      Method | Categories | Size |       Mean |      Error |      StdDev | Scaled | ScaledSD |
-|------------ |----------- |----- |-----------:|-----------:|------------:|-------:|---------:|
-|     **AES-GCM** | **Encryption** |  **128** |   **306.2 ns** |  **0.5986 ns** |   **0.5307 ns** |   **1.00** |     **0.00** |
-| AES-GCM-SIV | Encryption |  128 |   287.7 ns |  3.6306 ns |   3.2185 ns |   0.94 |     0.01 |
-|             |            |      |            |            |             |        |          |
-|     AES-GCM | Decryption |  128 |   311.7 ns |  0.2751 ns |   0.2438 ns |   1.00 |     0.00 |
-| AES-GCM-SIV | Decryption |  128 |   329.5 ns |  2.6803 ns |   2.2382 ns |   1.06 |     0.01 |
-|             |            |      |            |            |             |        |          |
-|     **AES-GCM** | **Encryption** | **1024** |   **681.1 ns** |  **1.5380 ns** |   **1.3634 ns** |   **1.00** |     **0.00** |
-| AES-GCM-SIV | Encryption | 1024 |   663.0 ns |  2.6639 ns |   2.4918 ns |   0.97 |     0.00 |
-|             |            |      |            |            |             |        |          |
-|     AES-GCM | Decryption | 1024 |   681.0 ns |  0.7810 ns |   0.6923 ns |   1.00 |     0.00 |
-| AES-GCM-SIV | Decryption | 1024 |   715.3 ns |  1.3908 ns |   1.3009 ns |   1.05 |     0.00 |
-|             |            |      |            |            |             |        |          |
-|     **AES-GCM** | **Encryption** | **4096** | **1,984.3 ns** |  **6.5387 ns** |   **5.4601 ns** |   **1.00** |     **0.00** |
-| AES-GCM-SIV | Encryption | 4096 | 1,877.8 ns |  0.5862 ns |   0.5196 ns |   0.95 |     0.00 |
-|             |            |      |            |            |             |        |          |
-|     AES-GCM | Decryption | 4096 | 1,988.5 ns |  1.0060 ns |   0.8401 ns |   1.00 |     0.00 |
-| AES-GCM-SIV | Decryption | 4096 | 1,882.5 ns |  7.0526 ns |   6.5970 ns |   0.95 |     0.00 |
-|             |            |      |            |            |             |        |          |
-|     **AES-GCM** | **Encryption** | **8192** | **3,754.4 ns** | **84.4706 ns** |  **79.0138 ns** |   **1.00** |     **0.00** |
-| AES-GCM-SIV | Encryption | 8192 | 3,503.4 ns |  2.5222 ns |   2.1061 ns |   0.93 |     0.02 |
-|             |            |      |            |            |             |        |          |
-|     AES-GCM | Decryption | 8192 | 4,038.8 ns | 79.7916 ns | 114.4348 ns |   1.00 |     0.00 |
-| AES-GCM-SIV | Decryption | 8192 | 3,609.7 ns | 66.9556 ns |  62.6303 ns |   0.89 |     0.03 |
+|      Method | Categories | Size |       Mean |      Error |      StdDev | Scaled |
+|------------ |----------- |----- |-----------:|-----------:|------------:|-------:|
+|     **AES-GCM** | **Encryption** |  **128** |   **306.2 ns** |  **0.5986 ns** |   **0.5307 ns** |   **1.00** |
+| AES-GCM-SIV | Encryption |  128 |   287.7 ns |  3.6306 ns |   3.2185 ns |   0.94 |
+|             |            |      |            |            |             |        |
+|     AES-GCM | Decryption |  128 |   311.7 ns |  0.2751 ns |   0.2438 ns |   1.00 |
+| AES-GCM-SIV | Decryption |  128 |   329.5 ns |  2.6803 ns |   2.2382 ns |   1.06 |
+|             |            |      |            |            |             |        |
+|     **AES-GCM** | **Encryption** | **1024** |   **681.1 ns** |  **1.5380 ns** |   **1.3634 ns** |   **1.00** |
+| AES-GCM-SIV | Encryption | 1024 |   663.0 ns |  2.6639 ns |   2.4918 ns |   0.97 |
+|             |            |      |            |            |             |        |
+|     AES-GCM | Decryption | 1024 |   681.0 ns |  0.7810 ns |   0.6923 ns |   1.00 |
+| AES-GCM-SIV | Decryption | 1024 |   715.3 ns |  1.3908 ns |   1.3009 ns |   1.05 |
+|             |            |      |            |            |             |        |
+|     **AES-GCM** | **Encryption** | **4096** | **1,984.3 ns** |  **6.5387 ns** |   **5.4601 ns** |   **1.00** |
+| AES-GCM-SIV | Encryption | 4096 | 1,877.8 ns |  0.5862 ns |   0.5196 ns |   0.95 |
+|             |            |      |            |            |             |        |
+|     AES-GCM | Decryption | 4096 | 1,988.5 ns |  1.0060 ns |   0.8401 ns |   1.00 |
+| AES-GCM-SIV | Decryption | 4096 | 1,882.5 ns |  7.0526 ns |   6.5970 ns |   0.95 |
+|             |            |      |            |            |             |        |
+|     **AES-GCM** | **Encryption** | **8192** | **3,754.4 ns** | **84.4706 ns** |  **79.0138 ns** |   **1.00** |
+| AES-GCM-SIV | Encryption | 8192 | 3,503.4 ns |  2.5222 ns |   2.1061 ns |   0.93 |
+|             |            |      |            |            |             |        |
+|     AES-GCM | Decryption | 8192 | 4,038.8 ns | 79.7916 ns | 114.4348 ns |   1.00 |
+| AES-GCM-SIV | Decryption | 8192 | 3,609.7 ns | 66.9556 ns |  62.6303 ns |   0.89 |
 
 ## Performance (macOS)
 
