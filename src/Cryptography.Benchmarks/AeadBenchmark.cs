@@ -15,7 +15,6 @@ namespace Cryptography.Benchmarks
 		private byte[] plaintext;
 		private byte[] ciphertext;
 		private byte[] tag;
-		private byte[] associatedData;
 		private byte[] empty;
 
 		private byte[] ciphertextGcm;
@@ -37,7 +36,6 @@ namespace Cryptography.Benchmarks
 			plaintext = new byte[Size];
 			ciphertext = new byte[Size];
 			tag = new byte[16];
-			associatedData = new byte[Size];
 			empty = new byte[0];
 
 			ciphertextGcm = new byte[Size];
@@ -52,31 +50,16 @@ namespace Cryptography.Benchmarks
 			siv.Encrypt(nonce, plaintext, ciphertextSiv, tagSiv);
 		}
 
-		[BenchmarkCategory("Encryption"), Benchmark(Baseline = true, Description = "AES-GCM (native)")]
+		[BenchmarkCategory("Encryption"), Benchmark(Baseline = true, Description = "AES-GCM")]
 		public void BenchmarkAesGcmNativeEncryption() => gcm.Encrypt(nonce, plaintext, ciphertext, tag);
-
-		[BenchmarkCategory("Encryption"), Benchmark(Description = "AES-GCM (libsodium)")]
-		public void BenchmarkAesGcmLibsodiumEncryption() => Libsodium.Encrypt(key, nonce, plaintext, ciphertext, tag, default);
 
 		[BenchmarkCategory("Encryption"), Benchmark(Description = "AES-GCM-SIV")]
 		public void BenchmarkAesGcmSivEncryption() => siv.Encrypt(nonce, plaintext, ciphertext, tag);
 
-		[BenchmarkCategory("Decryption"), Benchmark(Baseline = true, Description = "AES-GCM (native)")]
+		[BenchmarkCategory("Decryption"), Benchmark(Baseline = true, Description = "AES-GCM")]
 		public void BenchmarkAesGcmNativeDecryption() => gcm.Decrypt(nonce, ciphertextGcm, tagGcm, plaintext);
-
-		[BenchmarkCategory("Decryption"), Benchmark(Description = "AES-GCM (libsodium)")]
-		public void BenchmarkAesGcmLibsodiumDecryption() => Libsodium.Decrypt(key, nonce, default, ciphertextGcm, tagGcm, plaintext);
 
 		[BenchmarkCategory("Decryption"), Benchmark(Description = "AES-GCM-SIV")]
 		public void BenchmarkAesGcmSivDecryption() => siv.Decrypt(nonce, ciphertextSiv, tagSiv, plaintext);
-
-		[BenchmarkCategory("Authentication"), Benchmark(Baseline = true, Description = "GHASH (native)")]
-		public void BenchmarkAesGcmNativeAuthentication() => gcm.Encrypt(nonce, empty, empty, tag, associatedData);
-
-		[BenchmarkCategory("Authentication"), Benchmark(Description = "GHASH (libsodium)")]
-		public void BenchmarkAesGcmLibsodiumAuthentication() => Libsodium.Encrypt(key, nonce, empty, empty, tag, associatedData);
-
-		[BenchmarkCategory("Authentication"), Benchmark(Description = "POLYVAL")]
-		public void BenchmarkAesGcmSivAuthentication() => siv.Encrypt(nonce, empty, empty, tag, associatedData);
 	}
 }
