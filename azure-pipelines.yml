@@ -4,10 +4,10 @@ pool:
 variables:
   buildConfiguration: 'Release'
 
-- task: DotNetCoreInstaller@0
-  inputs:
-    version: '3.0.100-alpha1-009640'
-
 steps:
 - script: dotnet build --configuration $(buildConfiguration)
   displayName: 'dotnet build $(buildConfiguration)'
+
+- task: DotNetCoreInstaller@0
+  inputs:
+    version: '3.0.100-alpha1-009640'
