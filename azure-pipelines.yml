@@ -4,6 +4,11 @@ pool:
 variables:
   buildConfiguration: 'Release'
 
+trigger:
+  branches:
+    include:
+    - master
+
 steps:
 - script:
     cd src/Cryptography
