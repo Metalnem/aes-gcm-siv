@@ -72,13 +72,13 @@ using (var siv = new AesGcmSiv(key))
 
 ## Resources
 
-[AES-GCM-SIV: Nonce Misuse-Resistant Authenticated Encryption draft-irtf-cfrg-gcmsiv-08](https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08)
-[AES-GCM-SIV: Specification and Analysis](https://eprint.iacr.org/2017/168.pdf)
-[Webpage for the AES-GCM-SIV Mode of Operation](https://cyber.biu.ac.il/aes-gcm-siv/)
-[AES-GCM-SIV implementations (128 and 256 bit)](https://github.com/Shay-Gueron/AES-GCM-SIV)
-[Go implementation](https://github.com/agl/gcmsiv)
-[Java implementation](https://github.com/codahale/aes-gcm-siv)
-[AES-GCM-SIV (Adam Langley)](https://www.imperialviolet.org/2017/05/14/aesgcmsiv.html)
+[AES-GCM-SIV: Nonce Misuse-Resistant Authenticated Encryption draft-irtf-cfrg-gcmsiv-08](https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08)  
+[AES-GCM-SIV: Specification and Analysis](https://eprint.iacr.org/2017/168.pdf)  
+[Webpage for the AES-GCM-SIV Mode of Operation](https://cyber.biu.ac.il/aes-gcm-siv/)  
+[AES-GCM-SIV implementations (128 and 256 bit)](https://github.com/Shay-Gueron/AES-GCM-SIV)  
+[Go implementation](https://github.com/agl/gcmsiv)  
+[Java implementation](https://github.com/codahale/aes-gcm-siv)  
+[AES-GCM-SIV (Adam Langley)](https://www.imperialviolet.org/2017/05/14/aesgcmsiv.html)  
 [Towards A Safer Footgun (Coda Hale)](https://codahale.com/towards-a-safer-footgun/)
 
 ## Performance (Windows)
