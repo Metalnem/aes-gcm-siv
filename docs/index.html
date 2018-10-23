@@ -68,6 +68,7 @@
 <h1 id="aes-gcm-siv">AES-GCM-SIV</h1>
 
 <p><a href="https://www.nuget.org/packages/AES-GCM-SIV"><img src="https://img.shields.io/nuget/v/AES-GCM-SIV.svg" alt="NuGet"></a>
+<a href="https://dev.azure.com/metalnem/aes-gcm-siv/_build/latest?definitionId=1"><img src="https://dev.azure.com/metalnem/aes-gcm-siv/_apis/build/status/Metalnem.aes-gcm-siv" alt="Build Status"></a>
 <a href="https://twitter.com/acdlite/status/974390255393505280"><img src="https://img.shields.io/badge/speed-blazing%20%F0%9F%94%A5-brightgreen.svg" alt="Blazing Fast"></a>
 <a href="https://metalnem.github.io/aes-gcm-siv/api/Cryptography.AesGcmSiv.html"><img src="https://img.shields.io/badge/docs-API-orange.svg?style=flat" alt="API Docs"></a>
 <a href="https://github.com/metalnem/aes-gcm-siv/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat" alt="License"></a></p>
@@ -112,8 +113,17 @@ using (var siv = new AesGcmSiv(key))
 }
 </code></pre>
 <h2 id="installation">Installation</h2>
-<pre><code>&gt; dotnet add package AES-GCM-SIV --version 0.1.0-alpha
+<pre><code>&gt; dotnet add package AES-GCM-SIV --version 0.2.0-alpha
 </code></pre>
+<h2 id="resources">Resources</h2>
+<p><a href="https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08">AES-GCM-SIV: Nonce Misuse-Resistant Authenticated Encryption draft-irtf-cfrg-gcmsiv-08</a><br>
+<a href="https://eprint.iacr.org/2017/168.pdf">AES-GCM-SIV: Specification and Analysis</a><br>
+<a href="https://cyber.biu.ac.il/aes-gcm-siv/">Webpage for the AES-GCM-SIV Mode of Operation</a><br>
+<a href="https://github.com/Shay-Gueron/AES-GCM-SIV">AES-GCM-SIV implementations (128 and 256 bit)</a><br>
+<a href="https://github.com/agl/gcmsiv">Go implementation</a><br>
+<a href="https://github.com/codahale/aes-gcm-siv">Java implementation</a><br>
+<a href="https://www.imperialviolet.org/2017/05/14/aesgcmsiv.html">AES-GCM-SIV (Adam Langley)</a><br>
+<a href="https://codahale.com/towards-a-safer-footgun/">Towards A Safer Footgun (Coda Hale)</a></p>
 <h2 id="performance-windows">Performance (Windows)</h2>
 <pre><code class="lang-ini">BenchmarkDotNet=v0.11.1, OS=Windows 10.0.17134.345 (1803/April2018Update/Redstone4)
 Intel Core i7-4800MQ CPU 2.70GHz (Max: 2.69GHz) (Haswell), 1 CPU, 8 logical and 4 physical cores

@@ -5,6 +5,7 @@ title: Noise.NET
 # AES-GCM-SIV
 
 [![NuGet][nuget-shield]][nuget-link]
+[![Build Status][build-shield]][build-link]
 [![Blazing Fast][speed-shield]][speed-link]
 [![API Docs][docs-shield]][docs-link]
 [![License][license-shield]][license-link]
@@ -16,6 +17,8 @@ by Shay Gueron. This library uses C# platform intrinsics, which is why you need
 
 [nuget-shield]: https://img.shields.io/nuget/v/AES-GCM-SIV.svg
 [nuget-link]: https://www.nuget.org/packages/AES-GCM-SIV
+[build-shield]: https://dev.azure.com/metalnem/aes-gcm-siv/_apis/build/status/Metalnem.aes-gcm-siv
+[build-link]: https://dev.azure.com/metalnem/aes-gcm-siv/_build/latest?definitionId=1
 [speed-shield]: https://img.shields.io/badge/speed-blazing%20%F0%9F%94%A5-brightgreen.svg
 [speed-link]: https://twitter.com/acdlite/status/974390255393505280
 [docs-shield]: https://img.shields.io/badge/docs-API-orange.svg?style=flat
@@ -68,8 +71,19 @@ using (var siv = new AesGcmSiv(key))
 ## Installation
 
 ```
-> dotnet add package AES-GCM-SIV --version 0.1.0-alpha
+> dotnet add package AES-GCM-SIV --version 0.2.0-alpha
 ```
+
+## Resources
+
+[AES-GCM-SIV: Nonce Misuse-Resistant Authenticated Encryption draft-irtf-cfrg-gcmsiv-08](https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08)  
+[AES-GCM-SIV: Specification and Analysis](https://eprint.iacr.org/2017/168.pdf)  
+[Webpage for the AES-GCM-SIV Mode of Operation](https://cyber.biu.ac.il/aes-gcm-siv/)  
+[AES-GCM-SIV implementations (128 and 256 bit)](https://github.com/Shay-Gueron/AES-GCM-SIV)  
+[Go implementation](https://github.com/agl/gcmsiv)  
+[Java implementation](https://github.com/codahale/aes-gcm-siv)  
+[AES-GCM-SIV (Adam Langley)](https://www.imperialviolet.org/2017/05/14/aesgcmsiv.html)  
+[Towards A Safer Footgun (Coda Hale)](https://codahale.com/towards-a-safer-footgun/)
 
 ## Performance (Windows)
 
