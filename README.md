@@ -13,8 +13,8 @@ by Shay Gueron. This library uses C# platform intrinsics, which is why you need
 
 [nuget-shield]: https://img.shields.io/nuget/v/AES-GCM-SIV.svg
 [nuget-link]: https://www.nuget.org/packages/AES-GCM-SIV
-[build-shield]: https://dev.azure.com/metalnem/metalnem/_apis/build/status/Metalnem.aes-gcm-siv
-[build-link]: https://dev.azure.com/metalnem/metalnem/_build/latest?definitionId=1
+[build-shield]: https://dev.azure.com/metalnem/aes-gcm-siv/_apis/build/status/Metalnem.aes-gcm-siv
+[build-link]: https://dev.azure.com/metalnem/aes-gcm-siv/_apis/build/status/Metalnem.aes-gcm-siv
 [speed-shield]: https://img.shields.io/badge/speed-blazing%20%F0%9F%94%A5-brightgreen.svg
 [speed-link]: https://twitter.com/acdlite/status/974390255393505280
 [docs-shield]: https://img.shields.io/badge/docs-API-orange.svg?style=flat
