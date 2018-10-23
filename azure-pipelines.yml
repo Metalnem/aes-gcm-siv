@@ -9,13 +9,13 @@ trigger:
     include:
     - master
 
-steps:
-- script: dotnet build --configuration $(buildConfiguration) src/Cryptography.sln
-  displayName: 'dotnet build $(buildConfiguration)'
-
 - task: DotNetCoreInstaller@0
   inputs:
     version: '3.0.100-alpha1-009640'
+
+steps:
+- script: dotnet build --configuration $(buildConfiguration) src/Cryptography.sln
+  displayName: 'dotnet build $(buildConfiguration)'
 
 - task: DotNetCoreCLI@2
   inputs:
