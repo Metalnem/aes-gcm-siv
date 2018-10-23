@@ -67,7 +67,7 @@ using (var siv = new AesGcmSiv(key))
 ## Installation
 
 ```
-> dotnet add package AES-GCM-SIV --version 0.1.0-alpha
+> dotnet add package AES-GCM-SIV --version 0.2.0-alpha
 ```
 
 ## Resources
