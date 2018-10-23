@@ -2,7 +2,7 @@ pool:
   vmImage: 'Ubuntu 16.04'
 
 variables:
-  buildConfiguration: 'Release'
+  buildConfiguration: 'release'
 
 trigger:
   branches:
@@ -10,11 +10,15 @@ trigger:
     - master
 
 steps:
-- script:
-    cd src/Cryptography
-    dotnet build --configuration $(buildConfiguration)
+- script: dotnet build --configuration $(buildConfiguration) src/Cryptography.sln
   displayName: 'dotnet build $(buildConfiguration)'
 
 - task: DotNetCoreInstaller@0
   inputs:
     version: '3.0.100-alpha1-009640'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: test
+    projects: '**/*Tests/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
