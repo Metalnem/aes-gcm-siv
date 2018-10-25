@@ -483,20 +483,20 @@ namespace Cryptography
 		// InitPowersTable writes powers 1..size of hashKey to htbl.
 		private static void InitPowersTable(byte* htbl, int size, byte* hashKey)
 		{
-			Vector128<ulong> tmp0, tmp1, tmp2, tmp3, tmp4;
+			Vector128<ulong> tmp1, tmp2, tmp3, tmp4;
 
 			var poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
 			var t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(hashKey));
+			var h = t;
 
-			tmp0 = t;
 			Sse2.Store(htbl, Sse.StaticCast<ulong, byte>(t));
 
 			for (int i = 1; i < size; ++i)
 			{
-				tmp1 = Pclmulqdq.CarrylessMultiply(t, tmp0, 0x00);
-				tmp4 = Pclmulqdq.CarrylessMultiply(t, tmp0, 0x11);
-				tmp2 = Pclmulqdq.CarrylessMultiply(t, tmp0, 0x10);
-				tmp3 = Pclmulqdq.CarrylessMultiply(t, tmp0, 0x01);
+				tmp1 = Pclmulqdq.CarrylessMultiply(t, h, 0x00);
+				tmp4 = Pclmulqdq.CarrylessMultiply(t, h, 0x11);
+				tmp2 = Pclmulqdq.CarrylessMultiply(t, h, 0x10);
+				tmp3 = Pclmulqdq.CarrylessMultiply(t, h, 0x01);
 				tmp2 = Sse2.Xor(tmp2, tmp3);
 				tmp3 = Sse2.ShiftLeftLogical128BitLane(tmp2, 8);
 				tmp2 = Sse2.ShiftRightLogical128BitLane(tmp2, 8);
