@@ -502,6 +502,7 @@ namespace Cryptography
 				tmp2 = Sse2.ShiftRightLogical128BitLane(tmp2, 8);
 				tmp1 = Sse2.Xor(tmp3, tmp1);
 				tmp4 = Sse2.Xor(tmp4, tmp2);
+
 				tmp2 = Pclmulqdq.CarrylessMultiply(tmp1, poly, 0x10);
 				tmp3 = Sse.StaticCast<uint, ulong>(Sse2.Shuffle(Sse.StaticCast<ulong, uint>(tmp1), 78));
 				tmp1 = Sse2.Xor(tmp3, tmp2);
