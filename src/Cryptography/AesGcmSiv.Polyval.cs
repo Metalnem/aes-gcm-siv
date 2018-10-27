@@ -73,6 +73,40 @@ namespace Cryptography
 			Sse2.Store(polyval, Sse.StaticCast<ulong, byte>(t));
 		}
 
+		// InitPowersTable writes powers 1..size of hashKey to htbl.
+		private static void InitPowersTable(byte* htbl, int size, byte* hashKey)
+		{
+			Vector128<ulong> tmp1, tmp2, tmp3, tmp4;
+
+			var poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
+			var t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(hashKey));
+			var h = t;
+
+			Sse2.Store(htbl, Sse.StaticCast<ulong, byte>(t));
+
+			for (int i = 1; i < size; ++i)
+			{
+				tmp1 = Pclmulqdq.CarrylessMultiply(t, h, 0x00);
+				tmp4 = Pclmulqdq.CarrylessMultiply(t, h, 0x11);
+				tmp2 = Pclmulqdq.CarrylessMultiply(t, h, 0x10);
+				tmp3 = Pclmulqdq.CarrylessMultiply(t, h, 0x01);
+				tmp2 = Sse2.Xor(tmp2, tmp3);
+				tmp3 = Sse2.ShiftLeftLogical128BitLane(tmp2, 8);
+				tmp2 = Sse2.ShiftRightLogical128BitLane(tmp2, 8);
+				tmp1 = Sse2.Xor(tmp3, tmp1);
+				tmp4 = Sse2.Xor(tmp4, tmp2);
+
+				tmp2 = Pclmulqdq.CarrylessMultiply(tmp1, poly, 0x10);
+				tmp3 = Sse.StaticCast<uint, ulong>(Sse2.Shuffle(Sse.StaticCast<ulong, uint>(tmp1), 78));
+				tmp1 = Sse2.Xor(tmp3, tmp2);
+				tmp2 = Pclmulqdq.CarrylessMultiply(tmp1, poly, 0x10);
+				tmp3 = Sse.StaticCast<uint, ulong>(Sse2.Shuffle(Sse.StaticCast<ulong, uint>(tmp1), 78));
+				tmp1 = Sse2.Xor(tmp3, tmp2);
+				t = Sse2.Xor(tmp4, tmp1);
+				Sse2.Store(&htbl[i * 16], Sse.StaticCast<ulong, byte>(t));
+			}
+		}
+
 		// PolyvalPowersTable updates the POLYVAL value in polyval to include length bytes
 		// of data from input, given the POLYVAL key in hashKey. It uses the precomputed
 		// powers of the key given in htbl. If the length is not divisible by 16, input

@@ -374,8 +374,10 @@ namespace Cryptography
 
 			xmm4 = Sse2.SetZeroVector128<byte>();
 			xmm14 = Sse2.SetZeroVector128<byte>();
+
 			xmm1 = Sse2.LoadVector128(&key[0]);
 			xmm3 = Sse2.LoadVector128(&key[16]);
+
 			Sse2.Store(&ks[0], xmm1);
 			Sse2.Store(&ks[16], xmm3);
 
@@ -383,7 +385,7 @@ namespace Cryptography
 			{
 				xmm2 = Ssse3.Shuffle(xmm3, mask);
 				xmm2 = Aes.EncryptLast(xmm2, con1);
-				con1 = Sse.StaticCast<ulong, byte>(Sse2.ShiftLeftLogical(Sse.StaticCast<byte, ulong>(con1), 1));
+				con1 = Sse.StaticCast<uint, byte>(Sse2.ShiftLeftLogical(Sse.StaticCast<byte, uint>(con1), 1));
 				xmm4 = Sse.StaticCast<ulong, byte>(Sse2.ShiftLeftLogical(Sse.StaticCast<byte, ulong>(xmm1), 32));
 				xmm1 = Sse2.Xor(xmm1, xmm4);
 				xmm4 = Ssse3.Shuffle(xmm1, con3);
@@ -480,45 +482,11 @@ namespace Cryptography
 			Sse2.StoreLow((long*)encKey + 3, Sse.StaticCast<byte, long>(b6));
 		}
 
-		// InitPowersTable writes powers 1..size of hashKey to htbl.
-		private static void InitPowersTable(byte* htbl, int size, byte* hashKey)
-		{
-			Vector128<ulong> tmp1, tmp2, tmp3, tmp4;
-
-			var poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
-			var t = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(hashKey));
-			var h = t;
-
-			Sse2.Store(htbl, Sse.StaticCast<ulong, byte>(t));
-
-			for (int i = 1; i < size; ++i)
-			{
-				tmp1 = Pclmulqdq.CarrylessMultiply(t, h, 0x00);
-				tmp4 = Pclmulqdq.CarrylessMultiply(t, h, 0x11);
-				tmp2 = Pclmulqdq.CarrylessMultiply(t, h, 0x10);
-				tmp3 = Pclmulqdq.CarrylessMultiply(t, h, 0x01);
-				tmp2 = Sse2.Xor(tmp2, tmp3);
-				tmp3 = Sse2.ShiftLeftLogical128BitLane(tmp2, 8);
-				tmp2 = Sse2.ShiftRightLogical128BitLane(tmp2, 8);
-				tmp1 = Sse2.Xor(tmp3, tmp1);
-				tmp4 = Sse2.Xor(tmp4, tmp2);
-
-				tmp2 = Pclmulqdq.CarrylessMultiply(tmp1, poly, 0x10);
-				tmp3 = Sse.StaticCast<uint, ulong>(Sse2.Shuffle(Sse.StaticCast<ulong, uint>(tmp1), 78));
-				tmp1 = Sse2.Xor(tmp3, tmp2);
-				tmp2 = Pclmulqdq.CarrylessMultiply(tmp1, poly, 0x10);
-				tmp3 = Sse.StaticCast<uint, ulong>(Sse2.Shuffle(Sse.StaticCast<ulong, uint>(tmp1), 78));
-				tmp1 = Sse2.Xor(tmp3, tmp2);
-				t = Sse2.Xor(tmp4, tmp1);
-				Sse2.Store(&htbl[i * 16], Sse.StaticCast<ulong, byte>(t));
-			}
-		}
-
 		// EncryptTag performs a key expansion of the AES-256 key in key, writes
 		// the expanded key to ks, and encrypts a single block from pt to ct.
 		private static void EncryptTag(byte* pt, byte* ct, byte* key, byte* ks)
 		{
-			Vector128<byte> xmm1, xmm2, xmm3, xmm4, xmm14, b1;
+			Vector128<byte> xmm1, xmm2, xmm3, xmm4, xmm14;
 
 			var mask = Sse.StaticCast<int, byte>(Sse2.SetVector128(0x0c0f0e0d, 0x0c0f0e0d, 0x0c0f0e0d, 0x0c0f0e0d));
 			var con1 = Sse.StaticCast<int, byte>(Sse2.SetVector128(1, 1, 1, 1));
@@ -526,19 +494,23 @@ namespace Cryptography
 
 			xmm4 = Sse2.SetZeroVector128<byte>();
 			xmm14 = Sse2.SetZeroVector128<byte>();
+
 			xmm1 = Sse2.LoadVector128(&key[0]);
 			xmm3 = Sse2.LoadVector128(&key[16]);
+
 			Sse2.Store(&ks[0], xmm1);
-			b1 = Sse2.LoadVector128(&pt[0]);
+			Sse2.Store(&ks[16], xmm3);
+
+			var b1 = Sse2.LoadVector128(&pt[0]);
+
 			b1 = Sse2.Xor(b1, xmm1);
 			b1 = Aes.Encrypt(b1, xmm3);
-			Sse2.Store(&ks[16], xmm3);
 
 			for (int i = 0; i < 6; ++i)
 			{
 				xmm2 = Ssse3.Shuffle(xmm3, mask);
 				xmm2 = Aes.EncryptLast(xmm2, con1);
-				con1 = Sse.StaticCast<ulong, byte>(Sse2.ShiftLeftLogical(Sse.StaticCast<byte, ulong>(con1), 1));
+				con1 = Sse.StaticCast<uint, byte>(Sse2.ShiftLeftLogical(Sse.StaticCast<byte, uint>(con1), 1));
 				xmm4 = Sse.StaticCast<ulong, byte>(Sse2.ShiftLeftLogical(Sse.StaticCast<byte, ulong>(xmm1), 32));
 				xmm1 = Sse2.Xor(xmm1, xmm4);
 				xmm4 = Ssse3.Shuffle(xmm1, con3);
