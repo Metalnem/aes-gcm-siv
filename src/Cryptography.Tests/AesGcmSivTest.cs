@@ -17,6 +17,7 @@ namespace Cryptography.Tests
 		private const string Authentication1000 = "Vectors/authentication-1000.json";
 		private const string CounterWrap = "Vectors/counter-wrap.json";
 		private const string Encryption1000 = "Vectors/encryption-1000.json";
+		private const string RandomKeys10000 = "Vectors/random-keys-10000.json";
 
 		private static readonly FieldInfo threshold =
 			typeof(AesGcmSiv).GetField("threshold", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -29,7 +30,8 @@ namespace Cryptography.Tests
 				Aes256GcmSiv,
 				Authentication1000,
 				CounterWrap,
-				Encryption1000
+				Encryption1000,
+				RandomKeys10000
 			};
 
 			foreach (var vector in files.SelectMany(LoadVectors))
@@ -67,7 +69,8 @@ namespace Cryptography.Tests
 				Aes256GcmSiv,
 				Authentication1000,
 				CounterWrap,
-				Encryption1000
+				Encryption1000,
+				RandomKeys10000
 			};
 
 			foreach (var vector in files.SelectMany(LoadVectors))
@@ -93,7 +96,8 @@ namespace Cryptography.Tests
 				Aes256GcmSiv,
 				Authentication1000,
 				CounterWrap,
-				Encryption1000
+				Encryption1000,
+				RandomKeys10000
 			};
 
 			foreach (var vector in files.SelectMany(LoadVectors))

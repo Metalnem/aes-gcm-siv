@@ -17,6 +17,7 @@
     <None Update="Vectors/authentication-1000.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Vectors/counter-wrap.json" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Vectors/encryption-1000.json" CopyToOutputDirectory="PreserveNewest" />
+	<None Update="Vectors/random-keys-10000.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
