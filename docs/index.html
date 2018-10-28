@@ -73,9 +73,9 @@
 <a href="https://metalnem.github.io/aes-gcm-siv/api/Cryptography.AesGcmSiv.html"><img src="https://img.shields.io/badge/docs-API-orange.svg?style=flat" alt="API Docs"></a>
 <a href="https://github.com/metalnem/aes-gcm-siv/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat" alt="License"></a></p>
 <p>C# implementation of <a href="https://eprint.iacr.org/2017/168.pdf">AES-GCM-SIV</a> nonce misuse-resistant authenticated encryption,
-defined in <a href="https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08">draft-irtf-cfrg-gcmsiv-08</a>. It's based on the <a href="https://github.com/Shay-Gueron/AES-GCM-SIV">C intrinsics code</a> written
-by Shay Gueron. This library uses C# platform intrinsics, which is why you need
-.NET Core 3.0 (currently available in alpha) in order to use it.</p>
+defined in <a href="https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08">draft-irtf-cfrg-gcmsiv-08</a>. Fastest available authenticated encryption
+library for .NET Core, with the encryption/decryption rate of roughly 8 Gbps/core.
+Implemented using .NET Core 3.0 platform intrinsics.</p>
 <h2 id="usage">Usage</h2>
 <pre><code class="lang-csharp">// Plaintext to encrypt.
 var plaintext = &quot;I'm cooking MC's like a pound of bacon&quot;;
@@ -113,8 +113,10 @@ using (var siv = new AesGcmSiv(key))
 }
 </code></pre>
 <h2 id="installation">Installation</h2>
-<pre><code>&gt; dotnet add package AES-GCM-SIV --version 0.2.0-alpha
+<pre><code>&gt; dotnet add package AES-GCM-SIV --version 0.3.0
 </code></pre>
+<h2 id="acknowledgements">Acknowledgements</h2>
+<p>This implementation is based on the <a href="https://github.com/Shay-Gueron/AES-GCM-SIV">C intrinsics code</a> written by Shay Gueron.</p>
 <h2 id="resources">Resources</h2>
 <p><a href="https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08">AES-GCM-SIV: Nonce Misuse-Resistant Authenticated Encryption draft-irtf-cfrg-gcmsiv-08</a><br>
 <a href="https://eprint.iacr.org/2017/168.pdf">AES-GCM-SIV: Specification and Analysis</a><br>

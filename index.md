@@ -11,9 +11,9 @@ title: Noise.NET
 [![License][license-shield]][license-link]
 
 C# implementation of [AES-GCM-SIV] nonce misuse-resistant authenticated encryption,
-defined in [draft-irtf-cfrg-gcmsiv-08]. It's based on the [C intrinsics code] written
-by Shay Gueron. This library uses C# platform intrinsics, which is why you need
-.NET Core 3.0 (currently available in alpha) in order to use it.
+defined in [draft-irtf-cfrg-gcmsiv-08]. Fastest available authenticated encryption
+library for .NET Core, with the encryption/decryption rate of roughly 8 Gbps/core.
+Implemented using .NET Core 3.0 platform intrinsics.
 
 [nuget-shield]: https://img.shields.io/nuget/v/AES-GCM-SIV.svg
 [nuget-link]: https://www.nuget.org/packages/AES-GCM-SIV
@@ -27,7 +27,6 @@ by Shay Gueron. This library uses C# platform intrinsics, which is why you need
 [license-link]: https://github.com/metalnem/aes-gcm-siv/blob/master/LICENSE
 [AES-GCM-SIV]: https://eprint.iacr.org/2017/168.pdf
 [draft-irtf-cfrg-gcmsiv-08]: https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08
-[C intrinsics code]: https://github.com/Shay-Gueron/AES-GCM-SIV
 
 ## Usage
 
@@ -71,8 +70,14 @@ using (var siv = new AesGcmSiv(key))
 ## Installation
 
 ```
-> dotnet add package AES-GCM-SIV --version 0.2.0-alpha
+> dotnet add package AES-GCM-SIV --version 0.3.0
 ```
+
+## Acknowledgements
+
+This implementation is based on the [C intrinsics code] written by Shay Gueron.
+
+[C intrinsics code]: https://github.com/Shay-Gueron/AES-GCM-SIV
 
 ## Resources
 
