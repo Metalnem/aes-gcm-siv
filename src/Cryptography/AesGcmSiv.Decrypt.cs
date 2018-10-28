@@ -13,7 +13,6 @@ namespace Cryptography
 		// powers in htbl. Decryption processes 6 blocks of data in parallel.
 		private static void DecryptPowersTable(byte* ct, int ctLen, byte* pt, byte* polyval, byte* htbl, byte* tag, byte* ks)
 		{
-			Vector128<byte> key;
 			Vector128<ulong> sCtr1, sCtr2, sCtr3, sCtr4, sCtr5, sCtr6, tmp0, tmp1, tmp2, tmp3, tmp4, h;
 
 			var poly = Sse.StaticCast<uint, ulong>(Sse2.SetVector128(0xc2000000, 0, 0, 1));
@@ -37,7 +36,7 @@ namespace Cryptography
 				var ctr6 = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr5), one));
 				ctr = Sse.StaticCast<int, byte>(Sse2.Add(Sse.StaticCast<byte, int>(ctr5), two));
 
-				key = Sse2.LoadVector128(ks);
+				var key = Sse2.LoadVector128(ks);
 				ctr1 = Sse2.Xor(ctr1, key);
 				ctr2 = Sse2.Xor(ctr2, key);
 				ctr3 = Sse2.Xor(ctr3, key);
