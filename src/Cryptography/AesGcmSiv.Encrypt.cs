@@ -23,8 +23,8 @@ namespace Cryptography
 			int remainder4 = blocks % 4;
 			int remainder4Pos = blocks - remainder4;
 
-			Vector128<byte> orMask = Sse.StaticCast<uint, byte>(Sse2.SetVector128(0x80000000, 0, 0, 0));
-			Vector128<byte> ctr = Sse2.Or(Sse2.LoadVector128(tag), orMask);
+			var orMask = Sse.StaticCast<uint, byte>(Sse2.SetVector128(0x80000000, 0, 0, 0));
+			var ctr = Sse2.Or(Sse2.LoadVector128(tag), orMask);
 
 			var one = Sse2.SetVector128(0, 0, 0, 1);
 			var two = Sse2.SetVector128(0, 0, 0, 2);
@@ -119,8 +119,8 @@ namespace Cryptography
 			int remainder8 = blocks % 8;
 			int remainder8Pos = blocks - remainder8;
 
-			Vector128<byte> orMask = Sse.StaticCast<uint, byte>(Sse2.SetVector128(0x80000000, 0, 0, 0));
-			Vector128<byte> ctr = Sse2.Or(Sse2.LoadVector128(tag), orMask);
+			var orMask = Sse.StaticCast<uint, byte>(Sse2.SetVector128(0x80000000, 0, 0, 0));
+			var ctr = Sse2.Or(Sse2.LoadVector128(tag), orMask);
 
 			var one = Sse2.SetVector128(0, 0, 0, 1);
 			var two = Sse2.SetVector128(0, 0, 0, 2);
