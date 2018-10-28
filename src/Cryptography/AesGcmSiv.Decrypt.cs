@@ -430,7 +430,7 @@ namespace Cryptography
 			if (ctLen > 0)
 			{
 				byte* b = stackalloc byte[16];
-				new Span<byte>(&ct[blocks * 16], ctLen).CopyTo(new Span<byte>(b, 16));
+				new Span<byte>(ct + blocks * 16, ctLen).CopyTo(new Span<byte>(b, 16));
 				var tmp = Sse2.Xor(ctr, Sse2.LoadVector128(ks));
 
 				for (int i = 1; i < 14; ++i)

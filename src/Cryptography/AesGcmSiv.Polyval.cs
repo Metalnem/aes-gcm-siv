@@ -390,7 +390,7 @@ namespace Cryptography
 			if (remainder16 != 0)
 			{
 				byte* b = stackalloc byte[16];
-				new Span<byte>(&input[length - remainder16], remainder16).CopyTo(new Span<byte>(b, 16));
+				new Span<byte>(input + length - remainder16, remainder16).CopyTo(new Span<byte>(b, 16));
 
 				var data = Sse2.Xor(t, Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(b)));
 				var h = Sse.StaticCast<byte, ulong>(Sse2.LoadVector128(htbl));
