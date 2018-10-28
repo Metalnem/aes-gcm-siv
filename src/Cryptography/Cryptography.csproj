@@ -7,8 +7,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>AES-GCM-SIV</PackageId>
     <Title>AES-GCM-SIV</Title>
-    <PackageVersion>0.3.0</PackageVersion>
-    <AssemblyVersion>0.3.0.0</AssemblyVersion>
+    <PackageVersion>0.3.1</PackageVersion>
+    <AssemblyVersion>0.3.1.0</AssemblyVersion>
     <Authors>Nemanja Mijailovic</Authors>
     <RepositoryUrl>https://github.com/Metalnem/aes-gcm-siv.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -17,6 +17,7 @@
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <PackageLicenseUrl>https://raw.githubusercontent.com/Metalnem/aes-gcm-siv/master/LICENSE</PackageLicenseUrl>
     <Description>C# implementation of AES-GCM-SIV nonce misuse-resistant authenticated encryption</Description>
+	<Summary>C# implementation of AES-GCM-SIV nonce misuse-resistant authenticated encryption. Fastest available authenticated encryption library for .NET Core, with the encryption/decryption rate of roughly 8 Gbps/core. Implemented using .NET Core 3.0 platform intrinsics.</Summary>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <Copyright>Copyright © 2018, Nemanja Mijailovic</Copyright>
     <PackageTags>crypto cryptography security encryption aes aes-gcm-siv aead simd intrinsics</PackageTags>
