@@ -81,7 +81,7 @@ This implementation is based on the [C intrinsics code] written by Shay Gueron.
 
 ## Resources
 
-[AES-GCM-SIV: Nonce Misuse-Resistant Authenticated Encryption draft-irtf-cfrg-gcmsiv-08](https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08)  
+[AES-GCM-SIV: Nonce Misuse-Resistant Authenticated Encryption](https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08)  
 [AES-GCM-SIV: Specification and Analysis](https://eprint.iacr.org/2017/168.pdf)  
 [Webpage for the AES-GCM-SIV Mode of Operation](https://cyber.biu.ac.il/aes-gcm-siv/)  
 [AES-GCM-SIV implementations (128 and 256 bit)](https://github.com/Shay-Gueron/AES-GCM-SIV)  
