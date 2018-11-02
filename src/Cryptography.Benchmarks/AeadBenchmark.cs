@@ -4,7 +4,6 @@ using BenchmarkDotNet.Configs;
 
 namespace Cryptography.Benchmarks
 {
-	[InProcess]
 	[CategoriesColumn]
 	[GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
 	[MarkdownExporter]
