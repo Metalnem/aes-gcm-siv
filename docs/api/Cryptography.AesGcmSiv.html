@@ -398,7 +398,7 @@ decrypted plaintext and the optional associated data.</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Decrypt(ReadOnlySpan&lt;byte&gt; nonce, ReadOnlySpan&lt;byte&gt; ciphertext, ReadOnlySpan&lt;byte&gt; tag, Span&lt;byte&gt; plaintext, ReadOnlySpan&lt;byte&gt; associatedData)</code></pre>
+    <pre><code class="lang-csharp hljs">public void Decrypt(ReadOnlySpan&lt;byte&gt; nonce, ReadOnlySpan&lt;byte&gt; ciphertext, ReadOnlySpan&lt;byte&gt; tag, Span&lt;byte&gt; plaintext, ReadOnlySpan&lt;byte&gt; associatedData = default(ReadOnlySpan&lt;byte&gt;))</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -437,7 +437,7 @@ decrypted plaintext and the optional associated data.</p>
       <tr>
         <td><span class="xref">System.ReadOnlySpan</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
         <td><span class="parametername">associatedData</span></td>
-        <td><p>Associated data to authenticate. Can be null.</p>
+        <td><p>Associated data to authenticate.</p>
 </td>
       </tr>
     </tbody>
@@ -586,7 +586,7 @@ and authenticates the optional associated data.</p>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public void Encrypt(ReadOnlySpan&lt;byte&gt; nonce, ReadOnlySpan&lt;byte&gt; plaintext, Span&lt;byte&gt; ciphertext, Span&lt;byte&gt; tag, ReadOnlySpan&lt;byte&gt; associatedData)</code></pre>
+    <pre><code class="lang-csharp hljs">public void Encrypt(ReadOnlySpan&lt;byte&gt; nonce, ReadOnlySpan&lt;byte&gt; plaintext, Span&lt;byte&gt; ciphertext, Span&lt;byte&gt; tag, ReadOnlySpan&lt;byte&gt; associatedData = default(ReadOnlySpan&lt;byte&gt;))</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -625,7 +625,7 @@ and authenticates the optional associated data.</p>
       <tr>
         <td><span class="xref">System.ReadOnlySpan</span>&lt;<span class="xref">System.Byte</span>&gt;</td>
         <td><span class="parametername">associatedData</span></td>
-        <td><p>Associated data to authenticate. Can be null.</p>
+        <td><p>Associated data to authenticate.</p>
 </td>
       </tr>
     </tbody>
