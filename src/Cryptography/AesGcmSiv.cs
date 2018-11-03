@@ -146,7 +146,7 @@ namespace Cryptography
 		/// <param name="plaintext">The plaintext to encrypt.</param>
 		/// <param name="ciphertext">The buffer for the ciphertext. It must be the same length as the plaintext.</param>
 		/// <param name="tag">The 16-byte buffer for the authentication tag.</param>
-		/// <param name="associatedData">Associated data to authenticate. Can be null.</param>
+		/// <param name="associatedData">Associated data to authenticate.</param>
 		/// <exception cref="ObjectDisposedException">
 		/// Thrown if the current instance has already been disposed.
 		/// </exception>
@@ -161,7 +161,7 @@ namespace Cryptography
 			ReadOnlySpan<byte> plaintext,
 			Span<byte> ciphertext,
 			Span<byte> tag,
-			ReadOnlySpan<byte> associatedData)
+			ReadOnlySpan<byte> associatedData = default)
 		{
 			ThrowIfDisposed();
 			CheckParameters(plaintext, ciphertext, nonce, tag);
@@ -283,7 +283,7 @@ namespace Cryptography
 		/// <param name="ciphertext">The ciphertext to decrypt.</param>
 		/// <param name="tag">The 16-byte authentication tag.</param>
 		/// <param name="plaintext">The buffer for the plaintext. It must be the same length as the ciphertext.</param>
-		/// <param name="associatedData">Associated data to authenticate. Can be null.</param>
+		/// <param name="associatedData">Associated data to authenticate.</param>
 		/// <exception cref="ObjectDisposedException">
 		/// Thrown if the current instance has already been disposed.
 		/// </exception>
@@ -298,7 +298,7 @@ namespace Cryptography
 			ReadOnlySpan<byte> ciphertext,
 			ReadOnlySpan<byte> tag,
 			Span<byte> plaintext,
-			ReadOnlySpan<byte> associatedData)
+			ReadOnlySpan<byte> associatedData = default)
 		{
 			ThrowIfDisposed();
 			CheckParameters(plaintext, ciphertext, nonce, tag);
