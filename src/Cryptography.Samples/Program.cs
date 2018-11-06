@@ -17,7 +17,7 @@ namespace Cryptography.Samples
 
 			// Create a 12-byte nonce.
 			var nonce = new byte[12];
-			RandomNumberGenerator.Fill(key);
+			RandomNumberGenerator.Fill(nonce);
 
 			// Create a new AesGcmSiv instance. It implements the IDisposable
 			// interface, so it's best to create it inside using statement.
