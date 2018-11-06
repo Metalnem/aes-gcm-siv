@@ -11,6 +11,8 @@ defined in [draft-irtf-cfrg-gcmsiv-08]. Fastest available authenticated encrypti
 library for .NET Core, with the encryption/decryption rate of roughly 8 Gbps/core.
 Implemented using .NET Core 3.0 platform intrinsics.
 
+![](aes-gcm-siv.svg)
+
 [nuget-shield]: https://img.shields.io/nuget/v/AES-GCM-SIV.svg
 [nuget-link]: https://www.nuget.org/packages/AES-GCM-SIV
 [build-shield]: https://dev.azure.com/metalnem/aes-gcm-siv/_apis/build/status/Metalnem.aes-gcm-siv
