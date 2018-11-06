@@ -5,9 +5,9 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Noise.NET </title>
+    <title>AES-GCM-SIV </title>
     <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Noise.NET ">
+    <meta name="title" content="AES-GCM-SIV ">
     <meta name="generator" content="docfx 2.38.1.0">
     
     <link rel="shortcut icon" href="favicon.ico">
@@ -72,10 +72,11 @@
 <a href="https://twitter.com/acdlite/status/974390255393505280"><img src="https://img.shields.io/badge/speed-blazing%20%F0%9F%94%A5-brightgreen.svg" alt="Blazing Fast"></a>
 <a href="https://metalnem.github.io/aes-gcm-siv/api/Cryptography.AesGcmSiv.html"><img src="https://img.shields.io/badge/docs-API-orange.svg?style=flat" alt="API Docs"></a>
 <a href="https://github.com/metalnem/aes-gcm-siv/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat" alt="License"></a></p>
-<p>C# implementation of <a href="https://eprint.iacr.org/2017/168.pdf">AES-GCM-SIV</a> nonce misuse-resistant authenticated encryption,
-defined in <a href="https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08">draft-irtf-cfrg-gcmsiv-08</a>. Fastest available authenticated encryption
-library for .NET Core, with the encryption/decryption rate of roughly 8 Gbps/core.
+<p>.NET Core 3.0 implementation of <a href="https://eprint.iacr.org/2017/168.pdf">AES-GCM-SIV</a> nonce misuse-resistant authenticated
+encryption, defined in <a href="https://tools.ietf.org/html/draft-irtf-cfrg-gcmsiv-08">draft-irtf-cfrg-gcmsiv-08</a>. Fastest available authenticated
+encryption library for .NET, with the encryption/decryption rate of roughly 8 Gbps/core.
 Implemented using .NET Core 3.0 platform intrinsics.</p>
+<p><img src="aes-gcm-siv.svg" alt=""></p>
 <h2 id="usage">Usage</h2>
 <pre><code class="lang-csharp">// Plaintext to encrypt.
 var plaintext = &quot;I'm cooking MC's like a pound of bacon&quot;;

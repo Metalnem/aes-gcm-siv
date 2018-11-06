@@ -25,6 +25,13 @@
 				]
 			}
 		],
+		"resource": [
+			{
+				"files": [
+					"aes-gcm-siv.svg"
+				]
+			}
+		],
 		"dest": "docs",
 		"template": [
 			"statictoc"

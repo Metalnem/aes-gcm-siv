@@ -1,5 +1,5 @@
 ---
-title: Noise.NET
+title: AES-GCM-SIV
 ---
 
 # AES-GCM-SIV
@@ -10,10 +10,12 @@ title: Noise.NET
 [![API Docs][docs-shield]][docs-link]
 [![License][license-shield]][license-link]
 
-C# implementation of [AES-GCM-SIV] nonce misuse-resistant authenticated encryption,
-defined in [draft-irtf-cfrg-gcmsiv-08]. Fastest available authenticated encryption
-library for .NET Core, with the encryption/decryption rate of roughly 8 Gbps/core.
+.NET Core 3.0 implementation of [AES-GCM-SIV] nonce misuse-resistant authenticated
+encryption, defined in [draft-irtf-cfrg-gcmsiv-08]. Fastest available authenticated
+encryption library for .NET, with the encryption/decryption rate of roughly 8 Gbps/core.
 Implemented using .NET Core 3.0 platform intrinsics.
+
+![](aes-gcm-siv.svg)
 
 [nuget-shield]: https://img.shields.io/nuget/v/AES-GCM-SIV.svg
 [nuget-link]: https://www.nuget.org/packages/AES-GCM-SIV
